@@ -1,8 +1,9 @@
 enum RoutePath {
     INDEX = '/',
     SIGNIN = '/signin',
-    SIGNUP = '/signup',
     SIGNOUT = '/signout',
+    CHAT = '/chat',
+    CHAT_VOICE_CALL = '/chat/voice-call',
 }
 
 export { RoutePath }
