@@ -1,1 +1,2 @@
-export {Chat} from './chat'
+export { Chat } from './chat'
+export {VoiceCall} from './voice-call'

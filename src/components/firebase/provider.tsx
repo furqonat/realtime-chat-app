@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app"
 import { ApplicationVerifier, ConfirmationResult, getAuth, onAuthStateChanged, signInWithPhoneNumber } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
-import { createContext, ReactNode, useEffect, useState } from "react"
+import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { useLocation } from "react-router-dom"
 
 const firebaseConfig = {
@@ -48,7 +48,7 @@ const useFirebase = () => {
 
 const firebaseContext = createContext({
     confirmationResult: null as ConfirmationResult | null,
-    signInWithPhone: async (phoneNumber: string, recaptchaVerifier: ApplicationVerifier) => { }
+    signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { }
 })
 
 interface FirebaseProviderProps {
@@ -63,4 +63,6 @@ const FirebaseProvider = (props: FirebaseProviderProps) => {
     )
 }
 
-export { FirebaseProvider }
+const useFirebases = () => useContext(firebaseContext)
+
+export { FirebaseProvider, useFirebases }
