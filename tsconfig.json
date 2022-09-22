@@ -106,6 +106,6 @@
     "build"
   ],
   "include": [
-    "src/**/*"
+    "src"
   ]
 }
