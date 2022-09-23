@@ -1,0 +1,1 @@
+export {VerifOtp} from './verification-opt'

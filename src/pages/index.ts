@@ -1,3 +1,3 @@
-export { Chat } from './chat'
-export { VoiceCall } from './voice-call'
-export {SignIn} from './signin'
+export {ChatMobile} from './mobile';
+export {ProfileMobile} from './mobile';
+export {VoiceCallMobile} from './mobile';
