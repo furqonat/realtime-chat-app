@@ -1,13 +1,15 @@
+import { Container } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 
+
+// todo: implementation qr code scanner
 
 const SignIn = () => {
     const navigate = useNavigate()
     return (
-        <div onClick={() => {
-        }}>
-
-        </div>
+        <Container>
+            <h1>Sign In</h1>
+        </Container>
     )
 }
 
