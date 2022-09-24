@@ -21,6 +21,6 @@ module.exports = {
 
     rules: {
         '@typescript-eslint/restrict-template-expressions': 'off',
-        '@typescript-eslint/no-empty-function': 'off'
+        '@typescript-eslint/no-empty-function': 'off',
     }
 }
