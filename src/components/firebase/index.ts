@@ -1,1 +1,0 @@
-export {FirebaseProvider} from "./provider"

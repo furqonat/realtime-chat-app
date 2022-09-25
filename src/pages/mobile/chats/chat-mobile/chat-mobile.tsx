@@ -2,7 +2,9 @@
 
 const ChatMobile = () => {
   return (
-    <div>chat-mobile</div>
+    <div>
+     Chat mobile
+    </div>
   )
 }
 

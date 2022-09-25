@@ -1,0 +1,47 @@
+.container{
+    min-height: 100vh;
+      display: grid;
+      align-content: center;
+      justify-content: center;
+      text-align: center;
+}
+.logo{
+    font-size:80px;
+    text-align:center;
+    color: blueviolet;
+}
+.text-otp{
+    text-align:center;
+    color:#6B748C
+}
+hr{
+    width:60%
+}
+.btn-send{
+    text-align: center;
+    align-items: center;
+}
+Button.btn-sms{
+    border-radius: 5;
+    background-color: #4438CA;
+    color:#fff;
+    width: 170px;
+    height:40px;
+    margin: 20px 0 10px;
+}
+Button.btn-whatsapp{
+    border-radius: 5;
+    color:#00E676;
+    border-color: #00E676;
+    width: 170px;
+    height:40px;
+    margin: 5px 0 30px;
+}
+Button.btn-whatsapp:hover{
+    border-color: hsl(151, 80%, 32%);
+}
+.link-number{
+    text-align:center;
+    font-weight:bolder;
+    color:#4438CA
+}

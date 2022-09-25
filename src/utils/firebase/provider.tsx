@@ -1,17 +1,20 @@
 import { initializeApp } from "firebase/app"
-import { ApplicationVerifier, ConfirmationResult, getAuth, onAuthStateChanged, signInWithPhoneNumber } from "firebase/auth"
+import {
+    ApplicationVerifier, ConfirmationResult,
+    getAuth, onAuthStateChanged, signInWithPhoneNumber, signOut
+} from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 const firebaseConfig = {
-    apiKey: `${process.env.FIREBASE_API_KEY}`,
-    authDomain: `${process.env.FIREBASE_AUTH_DOMAIN}`,
-    projectId: `${process.env.FIREBASE_PROJECT_ID}`,
-    storageBucket: `${process.env.FIREBASE_STORAGE_BUCKET}`,
-    messagingSenderId: `${process.env.FIREBASE_MESSAGING_SENDER_ID}`,
-    appId: `${process.env.FIREBASE_APP_ID}`,
-    measurementId: `${process.env.FIREBASE_MEASUREMENT_ID}`
+    apiKey: `${process.env.REACT_APP_FIREBASE_API_KEY}`,
+    authDomain: `${process.env.REACT_APP_FIREBASE_AUTH_DOMAIN}`,
+    projectId: `${process.env.REACT_APP_FIREBASE_PROJECT_ID}`,
+    storageBucket: `${process.env.REACT_APP_FIREBASE_STORAGE_BUCKET}`,
+    messagingSenderId: `${process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID}`,
+    appId: `${process.env.REACT_APP_FIREBASE_APP_ID}`,
+    measurementId: `${process.env.REACT_APP_FIREBASE_MEASUREMENT_ID}`
 }
 
 const app = initializeApp(firebaseConfig)
@@ -23,16 +26,18 @@ const auth = getAuth()
 
 const useFirebase = () => {
     const router = useLocation()
+    const navigate = useNavigate()
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user && router.pathname !== '/signin' && router.pathname !== '/signup') {
-                console.log('need login')
+            console.log(user)
+            if (!user && router.pathname !== '/' && router.pathname !== '/signin') {
+                navigate('/')
             }
         })
 
         return () => unsubscribe()
-    }, [router.pathname])
+    }, [router.pathname, navigate])
 
 
     const signInWithPhone = async (phoneNumber: string, recaptchaVerifier: ApplicationVerifier) => {
@@ -40,15 +45,21 @@ const useFirebase = () => {
         setConfirmationResult(signin)
     }
 
+    const logout = async () => {
+        return signOut(auth)
+    }
+
     return {
         confirmationResult,
-        signInWithPhone
+        signInWithPhone,
+        logout
     }
 }
 
 const firebaseContext = createContext({
     confirmationResult: null as ConfirmationResult | null,
-    signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { }
+    signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { },
+    logout: async () => { }
 })
 
 interface FirebaseProviderProps {
