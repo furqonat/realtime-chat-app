@@ -1,1 +1,0 @@
-export {VoiceCallMobile} from './voice-call-mobile'

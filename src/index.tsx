@@ -2,7 +2,7 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material"
 import ReactDOM from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
 import App from "./app"
-import { FirebaseProvider } from "./components"
+import { FirebaseProvider } from "./utils"
 
 const app = ReactDOM.createRoot(document.getElementById('app') as HTMLElement)
 

@@ -1,2 +1,1 @@
-export { FirebaseProvider } from './firebase'
-export {RoutePath} from './utils'
+export { RoutePath } from './utils'

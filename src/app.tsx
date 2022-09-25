@@ -1,14 +1,16 @@
-import {Route, Routes} from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { RoutePath } from './components/utils'
-import { ChatMobile,VoiceCallMobile } from './pages'
+import { Chats } from './pages'
 import './index.css'
+import { SignInQr, Verification } from './pages/web'
 
 const App = () => {
 
     return (
         <Routes>
-            <Route path={RoutePath.INDEX} element={<ChatMobile />} />
-            <Route path={RoutePath.CHAT_VOICE_CALL_MOBILE} element={<VoiceCallMobile />} />
+            <Route index element={<SignInQr />} />
+            <Route path={RoutePath.INDEX} element={<Chats />} />
+            <Route path={RoutePath.VERIFY} element={<Verification/>} />
         </Routes>
     )
 }
