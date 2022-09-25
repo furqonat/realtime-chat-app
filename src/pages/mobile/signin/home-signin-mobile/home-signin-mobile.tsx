@@ -10,6 +10,7 @@ import './style.css'
 import { Button} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from "hooks";
+import { setPhone } from 'redux/phoneReducer';
 
 const HomeSignInMobile = () => {
 
@@ -26,11 +27,8 @@ const handleChange = (newValue: string, info: MuiTelInputInfo) => {
   const continents: MuiTelInputContinent[] = ['AS']
   const excludedCountries: MuiTelInputCountry[] = ['MY']
 
-
-  
   const navigateToSendOtp = () => {
-        console.log(value)
-        dispatch(setValue(value))
+        dispatch(setPhone(value))
         navigate('./signin')
   }
 
