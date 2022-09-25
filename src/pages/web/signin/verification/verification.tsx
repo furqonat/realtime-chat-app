@@ -10,8 +10,8 @@ const Verification = () => {
 
     console.log(confirmationResult)
     // mendapatkan nomor telepon dari redux
-    const phone = useAppSelector(state => state.phone.phone)
-
+    const phone = useAppSelector(state => state.phone.phoneNumber)
+    console.log(phone)
     const [code, setCode] = useState('')
     const handleVerify = () => {
         confirmationResult?.confirm(code).then(

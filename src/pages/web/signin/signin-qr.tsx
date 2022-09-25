@@ -9,7 +9,7 @@ import { useFirebases } from "utils";
 
 const SignInQr = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
-  const { confirmationResult, signInWithPhone } = useFirebases()
+  const { signInWithPhone } = useFirebases()
   const capcha = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const [verify, setVerify] = useState<ApplicationVerifier>()
@@ -19,11 +19,7 @@ const SignInQr = () => {
     dispatch(setPhone(phoneNumber))
     signInWithPhone(phoneNumber, verify!!).then(
       (_) => {
-        navigate('/signin/qr/verify', {
-          state: {
-            confirmationResult
-          }
-        })
+        navigate('/signin/qr/verify')
       }
     )
   }
