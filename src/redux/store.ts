@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
+import openMessageReducer from './openMessageReducer'
 import phoneNumberReducer from './phoneReducer'
 
 export const store = configureStore({
     reducer: {
-        phone: phoneNumberReducer
+        phone: phoneNumberReducer,
+        openMessage: openMessageReducer,
     }
 })
 //@ts-ignore

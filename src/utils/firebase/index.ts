@@ -1,1 +1,1 @@
-export { FirebaseProvider, useFirebases } from "./provider"
+export { FirebaseProvider, useFirebases, db } from "./firebases"

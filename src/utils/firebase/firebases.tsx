@@ -4,6 +4,7 @@ import {
     getAuth, onAuthStateChanged, signInWithPhoneNumber, signOut
 } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
+import { IUser } from "interfaces"
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
@@ -24,16 +25,27 @@ const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 const auth = getAuth()
 
+const formatUser = (user: IUser) => {
+    return {
+        uid: user.uid,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        phoneNumber: user.phoneNumber
+    }
+}
+
 const useFirebase = () => {
     const router = useLocation()
     const navigate = useNavigate()
+    const [user, setUser] = useState<IUser>(null)
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log(user)
             if (!user && router.pathname !== '/' && router.pathname !== '/signin/qr/verify') {
                 navigate('/')
+                return
             }
+            setUser(formatUser(user))
         })
 
         return () => unsubscribe()
@@ -52,14 +64,16 @@ const useFirebase = () => {
     return {
         confirmationResult,
         signInWithPhone,
-        logout
+        logout,
+        user
     }
 }
 
 const firebaseContext = createContext({
     confirmationResult: null as ConfirmationResult | null,
     signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { },
-    logout: async () => { }
+    logout: async () => { },
+    user: null as IUser
 })
 
 interface FirebaseProviderProps {
@@ -76,4 +90,4 @@ const FirebaseProvider = (props: FirebaseProviderProps) => {
 
 const useFirebases = () => useContext(firebaseContext)
 
-export { FirebaseProvider, useFirebases }
+export { FirebaseProvider, useFirebases, db }

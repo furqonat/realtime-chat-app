@@ -1,23 +1,41 @@
-import { useAppSelector } from "hooks"
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useFirebases } from "utils"
+import { useFirebases, db } from "utils"
 
 
 const Verification = () => {
     const navigate = useNavigate()
     const { confirmationResult } = useFirebases()
 
-    console.log(confirmationResult)
-    // mendapatkan nomor telepon dari redux
-    const phone = useAppSelector(state => state.phone.phoneNumber)
-    console.log(phone)
     const [code, setCode] = useState('')
     const handleVerify = () => {
         confirmationResult?.confirm(code).then(
-            (result) => {
+            async result => {
                 if (result.user) {
-                    navigate('/chats')
+                    const docRef = doc(db, 'users', result.user.phoneNumber)
+                    const docSnap = await getDoc(docRef)
+                    if (docSnap.exists()) {
+                        updateDoc(docRef, {
+                            lastLogin: new Date().toLocaleDateString()
+                        }).then(() => {
+                            navigate('/chats')
+                        })
+                    } else {
+                        setDoc(doc(db, 'users', result.user.phoneNumber), {
+                            phoneNumber: result.user.phoneNumber,
+                            uid: result.user.uid,
+                            displayName: result.user.displayName,
+                            photoURL: result.user.photoURL,
+                            email: result.user.email,
+                            emailVerified: result.user.emailVerified,
+                            isIDCardVerified: false,
+                            lastLogin: new Date().toLocaleDateString()
+                        }).then(() => {
+                            navigate('/chats')
+                        })
+                    }
+                    
                 } else {
                     console.log('error')
                 }

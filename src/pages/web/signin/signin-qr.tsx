@@ -10,12 +10,11 @@ import { useFirebases } from "utils";
 const SignInQr = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const { signInWithPhone } = useFirebases()
-  const capcha = useRef<HTMLDivElement>(null)
+  const captcha = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const [verify, setVerify] = useState<ApplicationVerifier>()
   const dispatch = useAppDispatch()
   const handleClick = () => {
-    // menyimpan nomor telepon ke redux
     dispatch(setPhone(phoneNumber))
     signInWithPhone(phoneNumber, verify!!).then(
       (_) => {
@@ -24,17 +23,19 @@ const SignInQr = () => {
     )
   }
   useEffect(() => {
-    const p = new RecaptchaVerifier(capcha.current as HTMLDivElement, {}, getAuth())
+    const p = new RecaptchaVerifier(captcha.current as HTMLDivElement, {
+        size: 'invisible',
+    }, getAuth())
     p.render().then(_e => { })
     setVerify(p)
-  }, [capcha])
+  }, [captcha])
   return (
     <div>
       <input
         type={'text'}
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)} />
-      <div ref={capcha} />
+      <div ref={captcha} />
       <button
         onClick={handleClick}
       >Sign in</button>

@@ -1,1 +1,1 @@
-export {FirebaseProvider, useFirebases} from './firebase'
+export {FirebaseProvider, useFirebases, db} from './firebase'
