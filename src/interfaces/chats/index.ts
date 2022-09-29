@@ -1,1 +1,1 @@
-export { IChatItem, IChatMessage } from './chats'
+export { IChatItem, IChatMessage, IChatList } from './chats'

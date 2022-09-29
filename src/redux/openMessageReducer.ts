@@ -16,6 +16,7 @@ const initialState: OpenMessageState = {
         isIDCardVerified: false,
         photoURL: "",
         lastLogin: {},
+        status: "",
     },
     chatMessages: [],
 }
@@ -29,7 +30,6 @@ const openMessageReducer = createSlice({
         },
         setChatItem: (state, action) => {
             state.chatItem = action.payload;
-            console.log("setChatItem", state.chatItem);
         },
         setChatMessages: (state, action) => {
             state.chatMessages = action.payload;

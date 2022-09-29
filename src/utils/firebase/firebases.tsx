@@ -3,7 +3,7 @@ import {
     ApplicationVerifier, ConfirmationResult,
     getAuth, onAuthStateChanged, signInWithPhoneNumber, signOut
 } from "firebase/auth"
-import { getFirestore } from "firebase/firestore"
+import { doc, getFirestore, updateDoc } from "firebase/firestore"
 import { IUser } from "interfaces"
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -58,7 +58,12 @@ const useFirebase = () => {
     }
 
     const logout = async () => {
-        return signOut(auth)
+        const dbRef = doc(db, 'users', user.phoneNumber)
+        return updateDoc(dbRef, {
+            status: new Date().toISOString()
+        }).then(() => {
+            signOut(auth)
+        })
     }
 
     return {

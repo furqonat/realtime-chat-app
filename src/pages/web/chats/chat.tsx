@@ -3,12 +3,12 @@ import {
     Box, Grid, IconButton, InputAdornment,
     Modal, OutlinedInput, Popover, Stack, Typography
 } from '@mui/material'
-import { collection, doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { useAppDispatch, useAppSelector, useChats } from 'hooks'
-import { IChatItem, IChatMessage } from 'interfaces'
-import React, { useEffect, useState } from 'react'
+import { IChatItem } from 'interfaces'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { setChatItem, setChatMessages } from 'redux/openMessageReducer'
+import { setChatItem } from 'redux/openMessageReducer'
 import { db, useFirebases } from 'utils'
 import { ChatItem } from "./chat-item"
 import { ChatList } from './chat-list'
@@ -31,7 +31,7 @@ const Chat = () => {
     
     const { user } = useFirebases()
     
-    const { chatList } = useChats({ user })
+    const { chatList } = useChats({ user: user })
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(event.target.value)
@@ -41,7 +41,7 @@ const Chat = () => {
             const dbRef = doc(db, 'users', query)
             getDoc(dbRef).then(docSnap => {
                 if (docSnap.exists()) {
-                    dispatch(setChatItem(docSnap.data() as IChatItem))
+                    setUsers(docSnap.data() as IChatItem)
                     setOpenModal(false)
                     setError(false)
                 } else {
@@ -80,7 +80,7 @@ const Chat = () => {
     return (
         <Grid wrap='nowrap' container={true}>
             <Grid item={true} xs={6}>
-                <Stack sx={{position: 'relative', width: '100%'}}>
+                <Stack sx={{position: 'relative', width: '100%'}} spacing={1}>
                     <Stack spacing={2} sx={{py: 1.3, px: 3, background: '#f3f5f7'}}>
                         <Box sx={{
                             width: '100%', display: 'flex',

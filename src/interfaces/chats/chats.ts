@@ -4,7 +4,8 @@ interface IChatItem {
     displayName?: string,
     isIDCardVerified: boolean,
     photoURL?: string,
-    lastLogin?: any
+    lastLogin?: any,
+    status: "online" | "typing" | string,
 }
 
 interface IChatMessage {
@@ -25,4 +26,24 @@ interface IChatMessage {
     },
 }
 
-export { IChatItem, IChatMessage }
+
+interface IChatList {
+    uid: string,
+    owner: string,
+    receiver: {
+        uid: string,
+        displayName: string,
+        phoneNumber: string,
+        photoURL: string,
+        status: string | "online" | "typing",
+    },
+    lastMessage?: {
+        text: string,
+        createdAt: string,
+    } | null,
+    ownerPhoneNumber: string,
+    ownerDisplayName: string,
+    status: string | "online" | "typing",
+}
+
+export { IChatItem, IChatMessage, IChatList }
