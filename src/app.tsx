@@ -1,6 +1,6 @@
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import "moment/locale/id";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
 import { RoutePath } from './components/utils';
@@ -10,18 +10,26 @@ import { EntryPoint, SignInQr, Verification } from './pages';
 const App = () => {
     
 
-    const {user} = useFirebases()
+    const { user } = useFirebases()
+    const [online, setOnline] = useState(document.visibilityState === 'visible')
+
 
     useEffect(() => {
         if (user?.phoneNumber) {
             const dbRef = doc(db, 'users', user.phoneNumber)
             updateDoc(dbRef, {
-                status: document.visibilityState === 'visible' ? 'online' : new Date().toISOString()
+                status: online ? 'online' : new Date().toISOString()
             })
         }
 
-    }, [user?.phoneNumber])
 
+    }, [user?.phoneNumber, online])
+
+    useEffect(() => {
+        const handler = () => setOnline(document.visibilityState === 'visible')
+        document.addEventListener('visibilitychange', handler)
+        return () => document.removeEventListener('visibilitychange', handler)
+    }, [])
 
     
     return (

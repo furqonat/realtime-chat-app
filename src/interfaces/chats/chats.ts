@@ -24,6 +24,8 @@ interface IChatMessage {
         displayName: string,
         phoneNumber: string,
     },
+    type: string,
+    read: boolean,
 }
 
 

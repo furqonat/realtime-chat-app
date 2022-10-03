@@ -59,9 +59,9 @@ const useChats = (props: { id?: string, user: IUser }) => {
         return () => {
             unsubscribe()
         }
-    }, [props.id])
+    }, [props?.id, props.user?.uid])
 
     return { chatList, messages }
 }
 
-export { useChats };
+export { useChats }
