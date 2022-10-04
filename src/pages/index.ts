@@ -1,3 +1,3 @@
 // web exports
 export { Layout as EntryPoint } from './web'
-export { SignInQr, Verification } from './web'
+export { SignInQr, Verification, VideoCall } from './web'

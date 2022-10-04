@@ -5,7 +5,7 @@ import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
 import { RoutePath } from './components/utils';
 import './index.css';
-import { EntryPoint, SignInQr, Verification } from './pages';
+import { EntryPoint, SignInQr, Verification, VideoCall } from './pages';
 
 const App = () => {
     
@@ -36,7 +36,8 @@ const App = () => {
         <Routes>
             <Route index element={<SignInQr />} />
             <Route path={RoutePath.INDEX} element={<EntryPoint />} />
-            <Route path={RoutePath.VERIFY} element={<Verification/>} />
+            <Route path={RoutePath.VERIFY} element={<Verification />} />
+            <Route path={RoutePath.VIDEO_CALL} element={<VideoCall />} />
         </Routes>
     )
 }

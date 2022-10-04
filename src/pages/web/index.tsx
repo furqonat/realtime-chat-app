@@ -96,6 +96,7 @@ const Layout = () => {
 }
 
 
-export { SignInQr, Verification } from './signin';
-export { Layout };
+export { SignInQr, Verification } from './signin'
+export { VideoCall } from './video-call'
+export { Layout }
 

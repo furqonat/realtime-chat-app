@@ -1,13 +1,16 @@
-import { Avatar, Box, Card, Stack, Typography } from "@mui/material";
+import { MoreVertOutlined, Phone, Videocam } from "@mui/icons-material";
+import { Avatar, Box, Card, IconButton, Stack, Typography } from "@mui/material";
 import { useChats } from "hooks";
 import { IChatItem } from "interfaces";
 import moment from "moment";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFirebases } from "utils";
 import { ChatInput } from "./chat-input";
 
 const ChatItem = (props: {user: IChatItem}) => {
 
+    const navigate = useNavigate()
 
     const ref = useRef<HTMLDivElement>(null)
     const { user } = useFirebases()
@@ -19,6 +22,10 @@ const ChatItem = (props: {user: IChatItem}) => {
     useEffect(() => {
         ref.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
+
+    const handleClickVideoCam = useCallback(() => {
+        navigate(`/video-call/${props.user.uid}${id}/call`)
+    }, [navigate, props.user.uid, id])
     return (
         <Box
             component={'section'}
@@ -33,7 +40,7 @@ const ChatItem = (props: {user: IChatItem}) => {
             <Stack
                 component={'header'}
                 sx={{
-                    display: 'flex'
+                    display: 'flex',
                 }}
                 spacing={2}>
                 <Card
@@ -43,21 +50,40 @@ const ChatItem = (props: {user: IChatItem}) => {
                         px: 2,
                         background: '#f3f5f7',
                     }}>
-                    <Stack spacing={2} direction={'row'} sx={{ p: 1 }}>
-                        <Avatar
-                            sx={{ width: 40, height: 40 }} />
-                        <Stack spacing={0} direction={'column'}>
-                            <Typography variant={'body1'}>{
-                                props.user.displayName ? props.user.displayName : props.user.phoneNumber
-                            }</Typography>
-                            <Typography variant={'body2'}>
-                                {
-                                    // get status of user
-                                    props.user.status === 'online' ? 'online' : moment(props.user.status).fromNow()
-                                }
-                            </Typography>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                        }}>
+                        <Stack spacing={2} direction={'row'} sx={{ p: 1 }}>
+                            <Avatar
+                                sx={{ width: 40, height: 40 }} />
+                            <Stack spacing={0} direction={'column'}>
+                                <Typography variant={'body1'}>{
+                                    props.user.displayName ? props.user.displayName : props.user.phoneNumber
+                                }</Typography>
+                                <Typography variant={'body2'}>
+                                    {
+                                        // get status of user
+                                        props.user.status === 'online' ? 'online' : moment(props.user.status).fromNow()
+                                    }
+                                </Typography>
+                            </Stack>
                         </Stack>
-                    </Stack>
+                        <Stack spacing={1} direction={'row'}>
+                            <IconButton
+                                onClick={handleClickVideoCam}>
+                                <Videocam />
+                            </IconButton>
+                            <IconButton>
+                                <Phone />
+                            </IconButton>
+                            <IconButton>
+                                <MoreVertOutlined />
+                            </IconButton>
+                        </Stack>
+                    </Box>
                 </Card>
             </Stack>
             <Stack
