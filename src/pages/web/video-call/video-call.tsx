@@ -3,7 +3,7 @@ import { Box, IconButton, Stack } from "@mui/material"
 import { addDoc, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { db } from "utils"
+import { db, useFirebases } from "utils"
 
 const server = {
     iceServers: [
@@ -24,6 +24,7 @@ const VideoCall = () => {
     const [isAudio, setIsAudio] = useState(true)
     const localVideoRef = useRef<HTMLVideoElement>(null)
     const remoteVideoRef = useRef<HTMLVideoElement>(null)
+    const {user} = useFirebases()
 
     useEffect(() => {
         if (id === null && q === null) {
@@ -62,7 +63,6 @@ const VideoCall = () => {
     
                 peer.onicecandidate = (e) => {
                     if (e.candidate) {
-                        console.log('add candidate')
                         addDoc(offerDbRef, {
                             ...e.candidate.toJSON(),
                         })
@@ -80,6 +80,12 @@ const VideoCall = () => {
                         offer: offer,
                         time: new Date().toISOString(),
                         status: 'calling',
+                        displayName: user?.displayName,
+                        photoURL: user?.photoURL,
+                        phoneNumber: user?.phoneNumber,
+                        callType: 'video',
+                        callId: id,
+                        seen: false,
                     })
         
                 }
@@ -92,7 +98,16 @@ const VideoCall = () => {
                         const answerDescription = new RTCSessionDescription(data.answer)
                         peer.setRemoteDescription(answerDescription)
                     }
+                    if (data.status === 'ended') {
+                        peer.close()
+                        navigate('/chats')
+                    }
+                    if (data.status === 'rejected') {
+                        peer.close()
+                        navigate('/chats')
+                    }
                 })
+
     
                 onSnapshot(answerDbRef, (snapshot) => {
                     snapshot.docChanges().forEach(async (change) => {
@@ -110,8 +125,8 @@ const VideoCall = () => {
                         })
                     }
                 }
+
                 const callData = (await getDoc(dbRef)).data()
-                console.log(callData)
                 const offerDescription = callData?.offer
                 await peer.setRemoteDescription(new RTCSessionDescription(offerDescription))
 
@@ -134,11 +149,22 @@ const VideoCall = () => {
                         }
                     })
                 })
+
+                onSnapshot(dbRef, (snapshot) => {
+                    const data = snapshot.data()
+                    if (data.status === 'ended') {
+                        peer.close()
+                        navigate('/chats')
+                    }
+                })
+
             }
     
         }
-        setup()
-    }, [id, q])
+        if (user?.phoneNumber) {
+            setup()
+        }
+    }, [id, q, user?.displayName, user?.photoURL, user?.phoneNumber, user])
 
 
     const handleClickVideo = () => {
@@ -159,7 +185,12 @@ const VideoCall = () => {
     }
     const handleHangeUp = () => {
         peer.close()
-        navigate('/chats')
+        const dbRef = doc(db, 'calls', id)
+        updateDoc(dbRef, {
+            status: 'ended',
+        }).then(() => {
+            navigate('/chats')
+        })
     }
 
     return (
@@ -219,7 +250,7 @@ const VideoCall = () => {
                 playsInline
                 ref={localVideoRef} />
             <video
-                width={'100vw'}
+                width={'100%'}
                 height={'100%'}
                 style={{
                     position: 'absolute',

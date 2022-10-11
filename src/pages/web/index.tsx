@@ -3,7 +3,9 @@ import {
 } from "@mui/icons-material";
 import { Box, Tab, Tabs } from "@mui/material";
 import { useState } from "react";
+import { Calls } from "./calls";
 import { Chat } from "./chats";
+import { Story } from "./story";
 import { Transaction } from "./transactions";
 
 interface TabPanelProps {
@@ -87,9 +89,11 @@ const Layout = () => {
             <TabPanel value={2} index={parseInt(value)} style={{width: '100%'}}>
                 <Transaction/>
             </TabPanel>
-            <TabPanel value={3} index={parseInt(value)} style={{width: '100%'}}>
+            <TabPanel value={3} index={parseInt(value)} style={{ width: '100%' }}>
+                <Calls/>
             </TabPanel>
             <TabPanel value={4} index={parseInt(value)} style={{width: '100%'}}>
+                <Story/>
             </TabPanel>
         </Box>
     )

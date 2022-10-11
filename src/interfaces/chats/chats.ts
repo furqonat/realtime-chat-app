@@ -30,7 +30,7 @@ interface IChatMessage {
 
 
 interface IChatList {
-    uid: string,
+    id: string,
     owner: string,
     receiver: {
         uid: string,

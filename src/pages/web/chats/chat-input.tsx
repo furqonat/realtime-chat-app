@@ -2,6 +2,7 @@ import {
     AttachFileOutlined, EmojiEmotionsOutlined, MicOutlined, SendOutlined
 } from "@mui/icons-material"
 import { Box, IconButton, OutlinedInput, Popover } from "@mui/material"
+import EmojiPicker from "emoji-picker-react"
 import { addDoc, collection, doc, setDoc, updateDoc } from "firebase/firestore"
 import { IChatItem } from "interfaces"
 import { FC, useState } from "react"
@@ -19,7 +20,9 @@ const ChatInput: FC<IChatInputProps> = (props) => {
     const [message, setMessage] = useState("")
     const [openModal, setOpenModal] = useState(false)
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+    
     const { user } = useFirebases()
+
     const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
 
     const sendMessage = (msg?: string) => {
@@ -171,7 +174,12 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     vertical: 'bottom',
                     horizontal: 'left',
                 }}>
-                Clean
+                <EmojiPicker
+                    onEmojiClick={(_, emojiObject) => {
+                        setMessage(message + emojiObject.emoji)
+                    }}
+                    native={true}
+                />
             </Popover>
         </Box>
     )

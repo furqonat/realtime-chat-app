@@ -16,6 +16,7 @@ const ChatItem = (props: {user: IChatItem}) => {
     const { user } = useFirebases()
     
     const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
+    const callId = id + new Date().getTime()
     const { messages } = useChats({ id: id, user: user })
 
    
@@ -24,7 +25,7 @@ const ChatItem = (props: {user: IChatItem}) => {
     }, [messages])
 
     const handleClickVideoCam = useCallback(() => {
-        navigate(`/video-call/${props.user.uid}${id}/call`)
+        navigate(`/video-call/${callId}/call`)
     }, [navigate, props.user.uid, id])
     return (
         <Box

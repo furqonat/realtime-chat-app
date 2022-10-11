@@ -14,8 +14,8 @@ const ChatList = (props: { chat: IChatList[], onClick?: (event: string) => void 
             {
                 props.chat?.map((chats) => (
                     <Item
-                        key={chats.receiver.uid}
-                        activeChat={activeChat === chats.receiver.uid}
+                        key={chats.id}
+                        activeChat={activeChat === chats.id}
                         chat={chats}
                         onSelect={(event) => {
                             setActiveChat(event)
@@ -47,7 +47,7 @@ const Item = (props: { chat: IChatList, onClick: (event: string) => void, active
         <Box
             onClick={() => {
                 user && props.onClick(user.uid === props.chat.owner ? props.chat.receiver.phoneNumber : props.chat.ownerPhoneNumber)
-                props.onSelect && props.onSelect(props.chat.receiver.uid)
+                props.onSelect && props.onSelect(props.chat.id)
             }}
             sx={
                 {
