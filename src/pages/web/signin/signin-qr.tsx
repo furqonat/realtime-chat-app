@@ -29,6 +29,7 @@ const SignInQr = () => {
     p.render().then(_e => { })
     setVerify(p)
   }, [captcha])
+  
   return (
     <div>
       <input

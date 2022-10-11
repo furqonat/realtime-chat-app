@@ -1,11 +1,12 @@
 import { doc, updateDoc } from "firebase/firestore";
 import "moment/locale/id";
+import { SignIn } from "pages/mobile";
 import { useEffect, useState } from "react";
 import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
 import { RoutePath } from './components/utils';
 import './index.css';
-import { EntryPoint, SignInQr, Verification, VideoCall } from './pages';
+import { EntryPoint, SignInQr, Verification, VideoCall } from 'pages';
 
 const App = () => {
     
@@ -34,7 +35,7 @@ const App = () => {
     
     return (
         <Routes>
-            <Route index element={<SignInQr />} />
+            <Route index element={<SignIn />} />
             <Route path={RoutePath.INDEX} element={<EntryPoint />} />
             <Route path={RoutePath.VERIFY} element={<Verification />} />
             <Route path={RoutePath.VIDEO_CALL} element={<VideoCall />} />
