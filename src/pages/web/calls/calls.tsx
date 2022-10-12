@@ -1,5 +1,9 @@
-import { NotificationsOutlined, MoreVertOutlined, SearchOutlined } from "@mui/icons-material"
-import { Grid, Stack, Box, Typography, IconButton, Popover, Modal, OutlinedInput, InputAdornment } from "@mui/material"
+import {
+    NotificationsOutlined, MoreVertOutlined, SearchOutlined
+} from "@mui/icons-material"
+import {
+    Grid, Stack, Box, Typography, IconButton, Popover, Modal, OutlinedInput, InputAdornment
+} from "@mui/material"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useFirebases } from "utils"
@@ -10,7 +14,7 @@ const Calls = () => {
     const [anchorMore, setAnchorMore] = useState<null | HTMLButtonElement>(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [openModal, setOpenModal] = useState(false)
-    const {logout} = useFirebases()
+    const { logout } = useFirebases()
 
     const handleOpenModal = () => {
         setOpenPopup(false)
@@ -30,8 +34,8 @@ const Calls = () => {
     return (
         <Grid wrap='nowrap' container={true}>
             <Grid item={true} xs={6}>
-                <Stack spacing={2} sx={{position: 'relative', width: '100%'}}>
-                    <Stack spacing={2} sx={{py: 1.3, px: 3, background: '#f3f5f7'}}>
+                <Stack spacing={2} sx={{ position: 'relative', width: '100%' }}>
+                    <Stack spacing={2} sx={{ py: 1.3, px: 3, background: '#f3f5f7' }}>
                         <Box sx={{
                             width: '100%', display: 'flex',
                             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 2
@@ -40,25 +44,25 @@ const Calls = () => {
                             <Stack direction={'row'}>
 
                                 <IconButton>
-                                    <NotificationsOutlined style={{cursor: 'pointer'}}/>
+                                    <NotificationsOutlined style={{ cursor: 'pointer' }} />
                                 </IconButton>
                                 <IconButton onClick={handlePopup}>
-                                    <MoreVertOutlined style={{cursor: 'pointer'}} aria-describedby={'more'}/>
+                                    <MoreVertOutlined style={{ cursor: 'pointer' }} aria-describedby={'more'} />
                                 </IconButton>
                                 <Popover
                                     id={'more'}
                                     anchorEl={anchorMore}
                                     onClose={() => setOpenPopup(false)}
                                     open={openPopup}>
-                                    <Stack spacing={2} direction={'column'} sx={{p: 2}}>
+                                    <Stack spacing={2} direction={'column'} sx={{ p: 2 }}>
                                         <Typography
                                             variant={'body1'}
                                             onClick={() => handleOpenModal()}
-                                            sx={{cursor: 'pointer'}}>Chat Baru</Typography>
+                                            sx={{ cursor: 'pointer' }}>Panggilan Baru</Typography>
                                         <Typography
                                             variant={'body1'}
                                             onClick={() => handleSignOut()}
-                                            sx={{cursor: 'pointer'}}>Keluar</Typography>
+                                            sx={{ cursor: 'pointer' }}>Keluar</Typography>
                                     </Stack>
                                 </Popover>
                             </Stack>
@@ -72,14 +76,14 @@ const Calls = () => {
                         </Modal>
                         <OutlinedInput
                             fullWidth={true}
-                            sx={{width: '100%', height: 40, borderRadius: 10, background: '#fff', p: 1.5}}
+                            sx={{ width: '100%', height: 40, borderRadius: 10, background: '#fff', p: 1.5 }}
                             placeholder={'Cari Pengilan'}
                             endAdornment={
                                 < InputAdornment position={'end'}>
-                                    <SearchOutlined/>
+                                    <SearchOutlined />
                                 </InputAdornment>
                             }
-                            size={'small'}/>
+                            size={'small'} />
                     </Stack>
                     {/*<ChatList chats={''}/>*/}
                 </Stack>

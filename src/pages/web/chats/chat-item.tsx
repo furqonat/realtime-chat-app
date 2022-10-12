@@ -1,6 +1,6 @@
 import { MoreVertOutlined, Phone, Videocam } from "@mui/icons-material";
 import { Avatar, Box, Card, IconButton, Stack, Typography } from "@mui/material";
-import { useChats } from "hooks";
+import { useChats, useUserStatus } from "hooks";
 import { IChatItem } from "interfaces";
 import moment from "moment";
 import { useCallback, useEffect, useRef } from "react";
@@ -19,14 +19,21 @@ const ChatItem = (props: {user: IChatItem}) => {
     const callId = id + new Date().getTime()
     const { messages } = useChats({ id: id, user: user })
 
+    const { status } = useUserStatus({phoneNumber: props.user.phoneNumber})
+
    
     useEffect(() => {
         ref.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
 
     const handleClickVideoCam = useCallback(() => {
-        navigate(`/video-call/${callId}/call`)
-    }, [navigate, props.user.uid, id])
+        navigate(`/video-call/${callId}/call/video`)
+    }, [navigate, callId])
+    
+    const handleClickCall = useCallback(() => {
+        navigate(`/video-call/${callId}/call/voice`)
+    }, [navigate, callId])
+
     return (
         <Box
             component={'section'}
@@ -67,7 +74,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                                 <Typography variant={'body2'}>
                                     {
                                         // get status of user
-                                        props.user.status === 'online' ? 'online' : moment(props.user.status).fromNow()
+                                        status === 'online' ? 'online' : status !== "" ? moment(status).fromNow() : ""
                                     }
                                 </Typography>
                             </Stack>
@@ -77,7 +84,8 @@ const ChatItem = (props: {user: IChatItem}) => {
                                 onClick={handleClickVideoCam}>
                                 <Videocam />
                             </IconButton>
-                            <IconButton>
+                            <IconButton
+                                onClick={handleClickCall}>
                                 <Phone />
                             </IconButton>
                             <IconButton>
@@ -121,7 +129,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                                         sx={{ width: 40, height: 40 }} />
                                     <Stack spacing={0} direction={'column'}>
                                         {
-                                            item.type === 'text' ? (
+                                            item.type === 'text' && (
                                                 <Typography
                                                 variant={'body1'}
                                                 sx={{
@@ -131,12 +139,28 @@ const ChatItem = (props: {user: IChatItem}) => {
                                                     item.message.text
                                                 }
                                             </Typography>
-                                            ) : (
+                                            )
+                                        }
+                                        {
+                                            item.type === 'audio' && (
                                                     <audio
                                                         key={index + '2'}
                                                         src={item.message.text}
                                                         controls>
                                                     </audio>
+                                            )
+                                        }
+                                        {
+                                            item.type === 'image' && (
+                                                <img
+                                                    key={index + '1'}
+                                                    src={item.message.text}
+                                                    alt={item.message.text}
+                                                    style={{
+                                                        width: '150px',
+                                                        height: '150px',
+                                                        objectFit: 'cover'
+                                                    }} />
                                             )
                                         }
                                         <Typography

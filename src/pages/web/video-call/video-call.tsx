@@ -1,9 +1,9 @@
 import { CallEnd, Mic, MicOff, Videocam, VideocamOff } from "@mui/icons-material"
-import { Box, IconButton, Stack } from "@mui/material"
+import { Box, CircularProgress, IconButton, Stack, Typography } from "@mui/material"
 import { addDoc, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { db, useFirebases } from "utils"
+import { CallState, db, useFirebases } from "utils"
 
 const server = {
     iceServers: [
@@ -15,36 +15,47 @@ const server = {
 }
 
 const peer = new RTCPeerConnection(server)
+let localStream: MediaStream = null
+let rs: MediaStream = null
 
 const VideoCall = () => {
     
-    let { id, q } = useParams()
+    let { id, q, callType } = useParams()
     const navigate = useNavigate()
     const [isVideo, setIsVideo] = useState(true)
     const [isAudio, setIsAudio] = useState(true)
+    const [connectionState, setConectionState] = useState(CallState.CALLING)
     const localVideoRef = useRef<HTMLVideoElement>(null)
     const remoteVideoRef = useRef<HTMLVideoElement>(null)
-    const {user} = useFirebases()
+    const { user } = useFirebases()
 
     useEffect(() => {
+        
         if (id === null && q === null) {
             navigate('/chats')
         }
     }, [id, q, navigate])
 
     useEffect(() => {
+        if (callType !== 'video') {
+            setIsVideo(false)
+        }
+    }, [callType])
+
+    useEffect(() => {
+        const dbRef = doc(db, 'calls', id)
+        const offerDbRef = collection(db, 'calls', id, 'offerCandidates')
+        const answerDbRef = collection(db, 'calls', id, 'answerCandidates')
+
         const setup = async () => {
     
-            const dbRef = doc(db, 'calls', id)
-            const offerDbRef = collection(db, 'calls', id, 'offerCandidates')
-            const answerDbRef = collection(db, 'calls', id, 'answerCandidates')
     
-            const localStream = await navigator.mediaDevices.getUserMedia({
-                video: true,
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video: callType === 'video',
                 audio: true
             })
             // get remote stream
-            const rs = new MediaStream()
+            rs = new MediaStream()
             peer.ontrack = (e) => {
                 e.streams[0].getTracks().forEach(track => {
                     rs.addTrack(track)
@@ -92,17 +103,22 @@ const VideoCall = () => {
                 offerDescription().then(() => {
                     console.log('offer done')
                 })
+
+                // peer.onconnectionstatechange((ev: Event) => {
+                // console.log(ev)
+                // })
+
                 onSnapshot(dbRef, (snapshot) => {
                     const data = snapshot.data()
                     if (!peer.currentRemoteDescription && data && data?.answer) {
                         const answerDescription = new RTCSessionDescription(data.answer)
                         peer.setRemoteDescription(answerDescription)
                     }
-                    if (data.status === 'ended') {
+                    if (data.status === CallState.ENDED) {
                         peer.close()
                         navigate('/chats')
                     }
-                    if (data.status === 'rejected') {
+                    if (data.status === CallState.REJECTED) {
                         peer.close()
                         navigate('/chats')
                     }
@@ -118,6 +134,7 @@ const VideoCall = () => {
                     })
                 })
             } else {
+                setConectionState(CallState.CONNECTING)
                 peer.onicecandidate = (e) => {
                     if (e.candidate) {
                         addDoc(answerDbRef, {
@@ -159,12 +176,76 @@ const VideoCall = () => {
                 })
 
             }
-    
+
         }
         if (user?.phoneNumber) {
-            setup()
+            setup().then(() => {
+                console.log('setup done')
+            })
         }
-    }, [id, q, user?.displayName, user?.photoURL, user?.phoneNumber, user])
+
+    }, [id, q, user?.displayName, user?.photoURL, user?.phoneNumber, user, navigate, callType])
+
+
+    useEffect(() => {
+        // when connectionState is calling and is has been 60 seconds
+        // set connectionState to unanswered
+        if (connectionState === CallState.CALLING) {
+            const timer = setTimeout(() => {
+                setConectionState(CallState.UNANSWERED)
+                console.log('unanswered')
+                const dbRef = doc(db, 'calls', id)
+                updateDoc(dbRef, {
+                    status: CallState.UNANSWERED,
+                }).then(() => {
+                    peer.close()
+                })
+            }, 60000)
+            return () => clearTimeout(timer)
+        }
+        return () => { }
+    }, [connectionState, id])
+
+    // when connectionState is unanswered
+    // set connectionState to ended
+    // and close peer connection
+    useEffect(() => {
+        if (connectionState === CallState.UNANSWERED) {
+            const timer = setTimeout(() => {
+                setConectionState(CallState.ENDED)
+                localStream?.getTracks().forEach(track => track.stop())
+                navigate('/chats')
+            }, 10000)
+            return () => clearTimeout(timer)
+        }
+        return () => { }
+    }, [connectionState, navigate])
+
+    useEffect(() => {
+        peer.onconnectionstatechange = (e) => {
+            switch (peer.connectionState) {
+                case 'new':
+                case 'connecting':
+                    setConectionState(CallState.CONNECTING)
+                    break
+                case 'connected':
+                    setConectionState(CallState.CONNECTED)
+                    break
+                case 'disconnected':
+                    setConectionState(CallState.DISCONNECTED)
+                    break
+                case 'failed':
+                    setConectionState(CallState.FAILED)
+                    break
+                case 'closed':
+                    setConectionState(CallState.CLOSED)
+                    break
+                default:
+                    setConectionState(CallState.CALLING)
+                    break
+            }
+        }
+    }, [])
 
 
     const handleClickVideo = () => {
@@ -189,9 +270,12 @@ const VideoCall = () => {
         updateDoc(dbRef, {
             status: 'ended',
         }).then(() => {
+            localStream?.getTracks().forEach(track => track.stop())
+            rs?.getTracks().forEach(track => track.stop())
             navigate('/chats')
         })
     }
+
 
     return (
         <Box
@@ -222,7 +306,7 @@ const VideoCall = () => {
                 <IconButton
                     onClick={handleClickVideo}>
                     {
-                        !isVideo ? <VideocamOff /> : <Videocam />
+                        isVideo && callType === 'video' ? <Videocam /> : <VideocamOff />
                     }
                 </IconButton>
                 <IconButton
@@ -249,15 +333,47 @@ const VideoCall = () => {
                 autoPlay
                 playsInline
                 ref={localVideoRef} />
-            <video
-                width={'100%'}
-                height={'100%'}
-                style={{
-                    position: 'absolute',
-                }}
-                autoPlay
-                playsInline
-                ref={remoteVideoRef} />
+            <Box
+                sx={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative',
+                }}>
+                    <video
+                        width={'100%'}
+                        height={'100%'}
+                        style={{
+                            position: 'absolute',
+                        }}
+                        autoPlay
+                        playsInline
+                        ref={remoteVideoRef} />
+                {
+                    connectionState !== CallState.CONNECTED &&
+                            (
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    position: 'absolute',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexDirection: 'column',
+                                }}>
+                                <Typography
+                                    variant='h5'
+                                    sx={{
+                                        color: 'white',
+                                    }}>
+                                    {connectionState}
+                                </Typography>
+                                <CircularProgress />
+                            </Box>
+                        )
+
+                }
+            </Box>
             
         </Box>
     )

@@ -1,9 +1,10 @@
 import {
-    AttachFileOutlined, EmojiEmotionsOutlined, MicOutlined, SendOutlined
+    AttachFileOutlined, CancelOutlined, EmojiEmotionsOutlined, MicOutlined, SendOutlined
 } from "@mui/icons-material"
-import { Box, IconButton, OutlinedInput, Popover } from "@mui/material"
+import { Alert, Box, Collapse, IconButton, Modal, OutlinedInput, Popover } from "@mui/material"
 import EmojiPicker from "emoji-picker-react"
 import { addDoc, collection, doc, setDoc, updateDoc } from "firebase/firestore"
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { IChatItem } from "interfaces"
 import { FC, useState } from "react"
 import { db, useFirebases } from "utils"
@@ -14,19 +15,45 @@ interface IChatInputProps {
     micClick?: () => void,
 }
 
-
+// TODO: implementation upload image sometime image doesn't upload
+// even if it's success the link is broken
 const ChatInput: FC<IChatInputProps> = (props) => {
 
     const [message, setMessage] = useState("")
     const [openModal, setOpenModal] = useState(false)
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+    const [base64Image, setBase64Image] = useState("")
+    const [image, setImage] = useState<File | null>(null)
+    const [modalImage, setModalImage] = useState(false)
+    const [downloadURL, setDownloadURL] = useState("")
+    const [error, setError] = useState(false)
     
     const { user } = useFirebases()
 
     const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
 
+    const getMessageType = (msg?: string) => {
+        if (msg) {
+            return "audio"
+        } else if (message.trim() !== "") {
+            return "text"
+        } else {
+            return "image"
+        }
+    }
+
+    const getLastMessageType = (msg?: string) => {
+        if (msg) {
+            return "Voice Note"
+        } else if (message.trim() !== "") {
+            return message
+        } else {
+            return "Image"
+        }
+    }
+
     const sendMessage = (msg?: string) => {
-        if (message.trim() === '' && msg.trim() === '') return
+        if (message.trim() === '' && msg?.trim() === '') return
         const dbRef = doc(db, 'chats', id)
         setDoc(dbRef, {
             id: id,
@@ -46,10 +73,10 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                 const res = collection(db, 'chats', id, 'messages')
                 addDoc(res, {
                     time: new Date().toLocaleTimeString(),
-                    type: msg ? 'audio' : 'text',
+                    type: getMessageType(msg),
                     read: false,
                     message: {
-                        text: msg || message,
+                        text: msg || message || downloadURL,
                         createdAt: new Date().toISOString(),
                     },
                     sender: {
@@ -65,7 +92,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                 }).then(() => {
                     updateDoc(dbRef, {
                         lastMessage: {
-                            text: msg === undefined ? message : "Voice Note",
+                            text: getLastMessageType(msg),
                             createdAt: new Date().toISOString(),
                         }
                     })
@@ -93,6 +120,44 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         setAnchorEl(event.currentTarget)
     }
 
+    const handleChangeInputImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.preventDefault()
+        const file = event.target.files?.[0]
+        console.log(file)
+        if (file) {
+            console.log(file, 'file')
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onloadend = () => {
+                // if reader.result larger than 3mb show error 
+                if ((reader.result as string).length < 3000000) {
+                    setBase64Image(reader.result.toString())
+                    setImage(file)
+                    setModalImage(true)
+                } else {
+                    setError(true)
+                }
+            }
+        }
+    }
+
+    const handleClearImage = () => {
+        setBase64Image('')
+        setModalImage(false)
+    }
+
+    const handleSendImage = () => {
+        const storage = getStorage()
+        const imageRef = ref(storage, `${user?.phoneNumber}/${id}/${image?.name}`)
+        uploadBytes(imageRef, image).then((result) => {
+            getDownloadURL(result.ref).then((url) => {
+                setDownloadURL(url)
+                sendMessage()
+                setModalImage(false)
+                setBase64Image('')
+            })
+        })
+    }
 
     return (
         <Box
@@ -114,11 +179,16 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     onClick={handleEmojiPopover}>
                     <EmojiEmotionsOutlined />
                 </IconButton>
-                <IconButton>
+                <IconButton
+                    component={'label'}>
+                    <input
+                        multiple={false}
+                        onChange={handleChangeInputImage}
+                        type="file" hidden accept="image/*" />
                     <AttachFileOutlined />
                 </IconButton>
                 <OutlinedInput
-                    value={message}
+                    value={message} 
                     onChange={handleChange}
                     onKeyDown={handleEnter}
                     size={'small'}
@@ -159,6 +229,56 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     }} />
 
             </Box>
+            <Modal
+                open={modalImage}>
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        height: 400,
+                        background: 'white',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        p: 2,
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                    }}>
+                    <Collapse
+                        in={error}>
+                        <Alert
+                            onClose={() => setError(false)}
+                            variant={'filled'}>
+                            Tidak boleh melebihi dari 3MB
+                        </Alert>
+                        
+                    </Collapse>
+                    <img
+                        width={300}
+                        height={300}
+                        src={base64Image} alt="" />
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            gap: 2,
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                        <IconButton
+                            onClick={handleClearImage}>
+                            <CancelOutlined />
+                        </IconButton>
+                        <IconButton
+                            onClick={handleSendImage}>
+                            <SendOutlined />
+                        </IconButton>
+                    </Box>
+                </Box>
+            </Modal>
             <Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}

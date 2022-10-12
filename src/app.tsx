@@ -21,13 +21,17 @@ const App = () => {
             updateDoc(dbRef, {
                 status: online ? 'online' : new Date().toISOString()
             })
+            return () => {
+                updateDoc(dbRef, {
+                    status: new Date().toISOString()
+                })
+            }
         }
-
-
+        return () => { }
     }, [user?.phoneNumber, online])
 
     useEffect(() => {
-        const handler = () => setOnline(document.visibilityState === 'visible')
+        const handler = () => setOnline(document.visibilityState === 'visible' || document.visibilityState === 'hidden')
         document.addEventListener('visibilitychange', handler)
         return () => document.removeEventListener('visibilitychange', handler)
     }, [])
