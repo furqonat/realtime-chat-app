@@ -8,12 +8,28 @@ import { RoutePath } from './components/utils';
 import './index.css';
 import { EntryPoint, SignInQr, Verification, VideoCall } from 'pages';
 
+const initBeforeUnload = (user) => {
+    window.onbeforeunload = (_event: BeforeUnloadEvent) => {
+        const dbRef = doc(db, 'users', user.phoneNumber)
+        updateDoc(dbRef, {
+            status: new Date().toISOString()
+        })
+    }
+}
+
 const App = () => {
     
 
     const { user } = useFirebases()
     const [online, setOnline] = useState(document.visibilityState === 'visible')
 
+    window.onload = () => {
+        initBeforeUnload(user)
+    }
+
+    useEffect(() => {
+        initBeforeUnload(user)
+    }, [user])
 
     useEffect(() => {
         if (user?.phoneNumber) {
