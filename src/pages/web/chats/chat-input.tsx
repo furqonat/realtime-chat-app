@@ -1,22 +1,22 @@
 import {
-    AttachFileOutlined, CancelOutlined, EmojiEmotionsOutlined, MicOutlined, SendOutlined
+    AttachFileOutlined, CancelOutlined,
+    EmojiEmotionsOutlined, MicOutlined, SendOutlined
 } from "@mui/icons-material"
 import { Alert, Box, Collapse, IconButton, Modal, OutlinedInput, Popover } from "@mui/material"
 import EmojiPicker from "emoji-picker-react"
 import { addDoc, collection, doc, setDoc, updateDoc } from "firebase/firestore"
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getStorage, ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage'
 import { IChatItem } from "interfaces"
 import { FC, useState } from "react"
 import { db, useFirebases } from "utils"
 import { Mic } from "./mic"
+import { uuidv4 } from "@firebase/util"
 
 interface IChatInputProps {
     user: IChatItem,
     micClick?: () => void,
 }
 
-// TODO: implementation upload image sometime image doesn't upload
-// even if it's success the link is broken
 const ChatInput: FC<IChatInputProps> = (props) => {
 
     const [message, setMessage] = useState("")
@@ -25,8 +25,8 @@ const ChatInput: FC<IChatInputProps> = (props) => {
     const [base64Image, setBase64Image] = useState("")
     const [image, setImage] = useState<File | null>(null)
     const [modalImage, setModalImage] = useState(false)
-    const [downloadURL, setDownloadURL] = useState("")
     const [error, setError] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
     
     const { user } = useFirebases()
 
@@ -52,7 +52,17 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         }
     }
 
-    const sendMessage = (msg?: string) => {
+    const getMessageText = (co: {msg?: string, download: string}) => {
+        if (message.trim().length > 0) {
+            return message
+        }
+        if (co.msg) {
+            return co.msg
+        }
+        return co.download
+    }
+
+    const sendMessage = (msg?: string, imgURL?: string) => {
         if (message.trim() === '' && msg?.trim() === '') return
         const dbRef = doc(db, 'chats', id)
         setDoc(dbRef, {
@@ -76,7 +86,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     type: getMessageType(msg),
                     read: false,
                     message: {
-                        text: msg || message || downloadURL,
+                        text: msg !== undefined ? getMessageText({msg: msg, download: ""}) : getMessageText({download: imgURL, msg: ""}),
                         createdAt: new Date().toISOString(),
                     },
                     sender: {
@@ -121,9 +131,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
     }
 
     const handleChangeInputImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.preventDefault()
         const file = event.target.files?.[0]
-        console.log(file)
         if (file) {
             console.log(file, 'file')
             const reader = new FileReader()
@@ -144,17 +152,30 @@ const ChatInput: FC<IChatInputProps> = (props) => {
     const handleClearImage = () => {
         setBase64Image('')
         setModalImage(false)
+        setImage(null)
     }
 
-    const handleSendImage = () => {
+
+    const handleSendImage = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation()
+        e.preventDefault()
+        setIsUploading(true)
         const storage = getStorage()
-        const imageRef = ref(storage, `${user?.phoneNumber}/${id}/${image?.name}`)
-        uploadBytes(imageRef, image).then((result) => {
-            getDownloadURL(result.ref).then((url) => {
-                setDownloadURL(url)
-                sendMessage()
+        const imageType = image?.type.split('/')[1]
+        const imageRef = ref(storage, `${user?.phoneNumber}/${id}/${uuidv4()}.${imageType}`)
+        const task = uploadBytesResumable(imageRef, image)
+        task.on('state_changed', (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            console.log(progress, 'progress')
+        }, (error) => {
+            console.log(error, 'error')
+        }, () => {
+            getDownloadURL(task.snapshot.ref).then((url) => {
+                sendMessage(undefined, url)
                 setModalImage(false)
                 setBase64Image('')
+                setImage(null)
+                setIsUploading(false)
             })
         })
     }
@@ -182,9 +203,10 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                 <IconButton
                     component={'label'}>
                     <input
+                        value={''}
                         multiple={false}
                         onChange={handleChangeInputImage}
-                        type="file" hidden accept="image/*" />
+                        type="file" hidden accept="image/png, image/jpeg, image/jpg image/gif" />
                     <AttachFileOutlined />
                 </IconButton>
                 <OutlinedInput
@@ -273,7 +295,13 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                             <CancelOutlined />
                         </IconButton>
                         <IconButton
-                            onClick={handleSendImage}>
+                            onClick={(event) => {
+                                if (isUploading) {
+                                    console.log('to many action')
+                                } else {
+                                    handleSendImage(event)
+                                }
+                            }}>
                             <SendOutlined />
                         </IconButton>
                     </Box>

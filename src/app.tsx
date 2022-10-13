@@ -31,7 +31,7 @@ const App = () => {
     }, [user?.phoneNumber, online])
 
     useEffect(() => {
-        const handler = () => setOnline(document.visibilityState === 'visible' || document.visibilityState === 'hidden')
+        const handler = () => setOnline(document.visibilityState === 'visible')
         document.addEventListener('visibilitychange', handler)
         return () => document.removeEventListener('visibilitychange', handler)
     }, [])
