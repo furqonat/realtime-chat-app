@@ -1,1 +1,1 @@
-export { IVideoCall } from './call'
+export { ICall } from './call'

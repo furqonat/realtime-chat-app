@@ -1,11 +1,10 @@
-import { Call, CallEndOutlined, MoreVertOutlined, NotificationsOutlined, SearchOutlined } from '@mui/icons-material'
+import { MoreVertOutlined, NotificationsOutlined, SearchOutlined } from '@mui/icons-material'
 import {
-    Avatar,
-    Box, Drawer, Grid, IconButton, InputAdornment,
+    Box, Grid, IconButton, InputAdornment,
     Modal, OutlinedInput, Popover, Stack, Typography
 } from '@mui/material'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { useAppDispatch, useAppSelector, useChats, useVideoCall } from 'hooks'
+import { doc, getDoc } from 'firebase/firestore'
+import { useAppDispatch, useAppSelector, useChats } from 'hooks'
 import { IChatItem } from 'interfaces'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -29,12 +28,10 @@ const Chat = () => {
     const [query, setQuery] = useState('')
     const [error, setError] = useState(false)
     const [users, setUsers] = useState(chatItem)
-    const [drawerCall, setDrawerCall] = useState(true)
 
     const { user } = useFirebases()
     
     const { chatList } = useChats({ user: user })
-    const { call } = useVideoCall({ user: user })
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(event.target.value)
@@ -77,19 +74,6 @@ const Chat = () => {
                 setUsers(docSnap.data() as IChatItem)
             }
         })
-    }
-
-    const handleOnCallReject = () => {
-        const dbRef = doc(db, 'calls', call.callId)
-        updateDoc(dbRef, {
-            status: 'rejected'
-        }).then(() => {
-            setDrawerCall(false)
-        })
-    }
-
-    const handleOnCallAccept = () => {
-        navigate(`/video-call/${call.callId}/answer`)
     }
     
 
@@ -183,41 +167,6 @@ const Chat = () => {
                     users !== undefined && <ChatItem user={users}/>
                 }
             </Grid>
-            {
-                call !== null && (
-                    <Drawer
-                        anchor={'bottom'}
-                        open={drawerCall}>
-                        <Stack
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                p: 5,
-                            }}
-                            spacing={2}>
-                            <Avatar
-                                sx={{ width: 100, height: 100, mx: 'auto' }}
-                                src={call?.photoURL} />
-                            <Typography variant={'h5'}>{call?.displayName}</Typography>
-                            <Typography variant={'body1'}>{call?.phoneNumber}</Typography>
-                            <Stack direction={'row'} spacing={2} sx={{ mx: 'auto' }}>
-                                <IconButton
-                                    onClick={handleOnCallReject}>
-                                    <CallEndOutlined
-                                        color={'error'} />
-                                </IconButton>
-                                <IconButton
-                                    onClick={handleOnCallAccept}>
-                                    <Call
-                                        color={'info'} />
-                                </IconButton>
-                            </Stack>
-                        </Stack>
-                    </Drawer>
-                )
-            }
         </Grid>
     )
 }

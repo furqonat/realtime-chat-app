@@ -4,9 +4,11 @@ import {
 import {
     Grid, Stack, Box, Typography, IconButton, Popover, Modal, OutlinedInput, InputAdornment
 } from "@mui/material"
+import { useVideoCall } from "hooks"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useFirebases } from "utils"
+import { CallList } from "./call-list"
 
 
 const Calls = () => {
@@ -14,7 +16,10 @@ const Calls = () => {
     const [anchorMore, setAnchorMore] = useState<null | HTMLButtonElement>(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [openModal, setOpenModal] = useState(false)
-    const { logout } = useFirebases()
+    const { logout, user } = useFirebases()
+
+    const { calls } = useVideoCall({ user })
+    
 
     const handleOpenModal = () => {
         setOpenPopup(false)
@@ -86,6 +91,7 @@ const Calls = () => {
                             size={'small'} />
                     </Stack>
                     {/*<ChatList chats={''}/>*/}
+                    <CallList calls={calls} />
                 </Stack>
             </Grid>
             <Grid item={true} xs={12}>

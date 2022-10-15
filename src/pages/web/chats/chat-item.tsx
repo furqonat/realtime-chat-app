@@ -3,7 +3,7 @@ import { Avatar, Box, Card, IconButton, Stack, Typography } from "@mui/material"
 import { useChats, useUserStatus } from "hooks";
 import { IChatItem } from "interfaces";
 import moment from "moment";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFirebases } from "utils";
 import { ChatInput } from "./chat-input";
@@ -19,7 +19,8 @@ const ChatItem = (props: {user: IChatItem}) => {
     const callId = id + new Date().getTime()
     const { messages } = useChats({ id: id, user: user })
 
-    const { status } = useUserStatus({phoneNumber: props.user.phoneNumber})
+    const { status } = useUserStatus({ phoneNumber: props.user.phoneNumber })
+    const [moreEl, setMoreEl] = useState<null | HTMLElement>(null)
 
    
     useEffect(() => {
@@ -33,6 +34,10 @@ const ChatItem = (props: {user: IChatItem}) => {
     const handleClickCall = useCallback(() => {
         navigate(`/video-call/${callId}/call/voice`)
     }, [navigate, callId])
+
+    const handleOpenMore = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setMoreEl(event.currentTarget)
+    }
 
     return (
         <Box
@@ -88,7 +93,8 @@ const ChatItem = (props: {user: IChatItem}) => {
                                 onClick={handleClickCall}>
                                 <Phone />
                             </IconButton>
-                            <IconButton>
+                            <IconButton
+                                onClick={handleOpenMore}>
                                 <MoreVertOutlined />
                             </IconButton>
                         </Stack>

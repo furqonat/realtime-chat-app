@@ -1,7 +1,8 @@
 import { Box } from "@mui/material"
+import { ICall } from "interfaces"
 
 
-const CallList: React.FC = () => {
+const CallList: React.FC<{calls: ICall[]}> = () => {
 
 
     return (

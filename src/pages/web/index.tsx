@@ -1,12 +1,18 @@
 import {
+    Call,
+    CallEndOutlined,
     CallOutlined, ForumOutlined, HistoryToggleOffOutlined, ReceiptLongOutlined
-} from "@mui/icons-material";
-import { Box, Tab, Tabs } from "@mui/material";
-import { useState } from "react";
-import { Calls } from "./calls";
-import { Chat } from "./chats";
-import { Story } from "./story";
-import { Transaction } from "./transactions";
+} from "@mui/icons-material"
+import { Avatar, Box, Drawer, IconButton, Stack, Tab, Tabs, Typography } from "@mui/material"
+import { doc, updateDoc } from "firebase/firestore"
+import { useVideoCall } from "hooks"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useFirebases, db } from "utils"
+import { Calls } from "./calls"
+import { Chat } from "./chats"
+import { Story } from "./story"
+import { Transaction } from "./transactions"
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -15,9 +21,29 @@ interface TabPanelProps {
     style?: React.CSSProperties;
 }
 
+// TODO: move the drawer call in app.tsx if nessesary
 
 const TabPanel = (props: TabPanelProps) => {
-    const {children, value, index, style, ...other} = props;
+    const { children, value, index, style, ...other } = props;
+    const navigate = useNavigate()
+    const [drawerCall, setDrawerCall] = useState(true)
+
+    const { user } = useFirebases()
+
+    const { call } = useVideoCall({ user })
+    
+    const handleOnCallReject = () => {
+        const dbRef = doc(db, 'calls', call.callId)
+        updateDoc(dbRef, {
+            status: 'rejected'
+        }).then(() => {
+            setDrawerCall(false)
+        })
+    }
+
+    const handleOnCallAccept = () => {
+        navigate(`/video-call/${call.callId}/answer/${call.callType}`)
+    }
 
     return (
         <div
@@ -33,6 +59,41 @@ const TabPanel = (props: TabPanelProps) => {
                     {children}
                 </Box>
             )}
+            {
+                call !== null && (
+                    <Drawer
+                        anchor={'bottom'}
+                        open={drawerCall}>
+                        <Stack
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                p: 5,
+                            }}
+                            spacing={2}>
+                            <Avatar
+                                sx={{ width: 100, height: 100, mx: 'auto' }}
+                                src={call?.photoURL} />
+                            <Typography variant={'h5'}>{call?.displayName}</Typography>
+                            <Typography variant={'body1'}>{call?.phoneNumber}</Typography>
+                            <Stack direction={'row'} spacing={2} sx={{ mx: 'auto' }}>
+                                <IconButton
+                                    onClick={handleOnCallReject}>
+                                    <CallEndOutlined
+                                        color={'error'} />
+                                </IconButton>
+                                <IconButton
+                                    onClick={handleOnCallAccept}>
+                                    <Call
+                                        color={'info'} />
+                                </IconButton>
+                            </Stack>
+                        </Stack>
+                    </Drawer>
+                )
+            }
         </div>
     );
 }

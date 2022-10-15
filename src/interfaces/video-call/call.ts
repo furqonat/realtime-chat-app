@@ -1,4 +1,4 @@
-interface IVideoCall {
+interface ICall {
     displayName: string,
     callId: string,
     callType: string,
@@ -9,4 +9,4 @@ interface IVideoCall {
     seen: boolean,
 }
 
-export { IVideoCall }
+export { ICall }
