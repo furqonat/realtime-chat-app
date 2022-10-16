@@ -1,4 +1,4 @@
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, deleteDoc, onSnapshot } from "firebase/firestore";
 import { IChatList, IChatMessage, IUser } from "interfaces";
 import { useEffect, useState } from "react";
 import { db } from "utils";
@@ -18,7 +18,7 @@ const useChats = (props: { id?: string, user: IUser }) => {
                 const values: any = []
                 snapshot.forEach((doc) => {
                     const data = doc.data()
-                    if (data.users.includes(props.user.uid)) {
+                    if (data.users.includes(props.user.uid) && data.visibility && data.visibility[props.user.uid]) {
                         values.push(data)
                     }
                     setChatList(values
@@ -38,7 +38,7 @@ const useChats = (props: { id?: string, user: IUser }) => {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === "added") {
                             // play sound when new message is added and user is not in chat screen 
-                            if (document.visibilityState === "hidden" && props.user.uid !== change.doc.data().sender.uid) {
+                            if (document.visibilityState !== "visible" && props.user.uid !== change.doc.data().sender.uid) {
                                 const audio = new Audio(newChatSound)
                                 audio.play()
                             }
@@ -47,9 +47,19 @@ const useChats = (props: { id?: string, user: IUser }) => {
                             //     new Audio(newChatSound).play()
                             // }
                         }
+                        if (change.type === 'modified') {
+                            // if message visitiblity for sender and receiver is false then delete message
+                            if (!change.doc.data().visibility[change.doc.data().receiver.uid] && !change.doc.data().visibility[change.doc.data().sender.uid]) {
+                                // change.doc.ref.delete()
+                                const docRef = change.doc.ref
+                                deleteDoc(docRef)
+                            }
+                        }
                     })
                     const data = snapshot.docs
-                        .map(doc => doc.data())
+                        .map(doc => [{ id: doc.id, ...doc.data() }])
+                        .map((item: any) => item[0])
+
                     const orderedData = data.sort((a: any, b: any) => {
                         return new Date(b.message.createdAt).getTime() - new Date(a.message.createdAt).getTime()
                     })

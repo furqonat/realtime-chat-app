@@ -1,16 +1,15 @@
+import { uuidv4 } from "@firebase/util"
 import {
     AttachFileOutlined, CancelOutlined,
     EmojiEmotionsOutlined, MicOutlined, SendOutlined
 } from "@mui/icons-material"
 import { Alert, Box, Collapse, IconButton, Modal, OutlinedInput, Popover } from "@mui/material"
 import EmojiPicker from "emoji-picker-react"
-import { addDoc, collection, doc, setDoc, updateDoc } from "firebase/firestore"
-import { getStorage, ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage'
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage'
 import { IChatItem } from "interfaces"
 import { FC, useState } from "react"
-import { db, useFirebases } from "utils"
+import { sendMessage, useFirebases } from "utils"
 import { Mic } from "./mic"
-import { uuidv4 } from "@firebase/util"
 
 interface IChatInputProps {
     user: IChatItem,
@@ -62,58 +61,22 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         return co.download
     }
 
-    const sendMessage = (msg?: string, imgURL?: string) => {
+    const sendMessages = (msg?: string, imgURL?: string) => {
         if (message.trim() === '' && msg?.trim() === '') return
-        const dbRef = doc(db, 'chats', id)
-        setDoc(dbRef, {
+        sendMessage({
+            receiver: props.user,
+            user: user,
+            message: msg !== undefined ? getMessageText({msg: msg, download: ""}) : getMessageText({download: imgURL, msg: ""}),
+            type: getMessageType(msg),
             id: id,
-            users: [user.uid, props.user.uid],
-            receiver: {
-                uid: props.user.uid,
-                displayName: props.user.displayName,
-                photoURL: props.user.photoURL,
-                phoneNumber: props.user.phoneNumber
-            },
-            owner: user.uid,
-            ownerPhoneNumber: user.phoneNumber,
-            ownerDisplayName: user.displayName,
-        }, { merge: true })
-        
-            .then(() => {
-                const res = collection(db, 'chats', id, 'messages')
-                addDoc(res, {
-                    time: new Date().toLocaleTimeString(),
-                    type: getMessageType(msg),
-                    read: false,
-                    message: {
-                        text: msg !== undefined ? getMessageText({msg: msg, download: ""}) : getMessageText({download: imgURL, msg: ""}),
-                        createdAt: new Date().toISOString(),
-                    },
-                    sender: {
-                        uid: user.uid,
-                        displayName: user.displayName,
-                        phoneNumber: user.phoneNumber,
-                    },
-                    receiver: {
-                        uid: props.user.uid,
-                        displayName: props.user.displayName,
-                        phoneNumber: props.user.phoneNumber,
-                    }
-                }).then(() => {
-                    updateDoc(dbRef, {
-                        lastMessage: {
-                            text: getLastMessageType(msg),
-                            createdAt: new Date().toISOString(),
-                        }
-                    })
-                })
-            })
+            lastMessageType: getLastMessageType(msg),
+        })
         setMessage('')
     }
     
     const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
-            sendMessage()
+            sendMessages()
         }
     }
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +134,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
             console.log(error, 'error')
         }, () => {
             getDownloadURL(task.snapshot.ref).then((url) => {
-                sendMessage(undefined, url)
+                sendMessages(undefined, url)
                 setModalImage(false)
                 setBase64Image('')
                 setImage(null)
@@ -210,6 +173,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     <AttachFileOutlined />
                 </IconButton>
                 <OutlinedInput
+                    autoFocus={true}
                     value={message} 
                     onChange={handleChange}
                     onKeyDown={handleEnter}
@@ -223,7 +187,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                 {
                     message.length > 0 ? (
                         <IconButton onClick={() => {
-                            sendMessage()
+                            sendMessages()
 
                         }}>
                             <SendOutlined />
@@ -245,7 +209,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     onSend={(blob) => {
                         handleAudio(blob)
                             .then((res) => {
-                                sendMessage(res)
+                                sendMessages(res)
                                 setOpenModal(false)
                             })
                     }} />
@@ -334,3 +298,4 @@ const ChatInput: FC<IChatInputProps> = (props) => {
 }
 
 export { ChatInput }
+

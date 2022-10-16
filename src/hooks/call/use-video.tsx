@@ -38,7 +38,7 @@ const useVideoCall = (props: {user?: IUser}) => {
         const unsubscribe = onSnapshot(dbRef, (snapshot) => {
             const callList = snapshot.docs.map((doc) => doc.data()).filter(data => data.callId.includes(props.user?.uid))
             setCalls(callList as ICall[])
-            console.log(callList)
+            // console.log(callList)
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
 

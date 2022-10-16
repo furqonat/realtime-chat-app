@@ -19,6 +19,8 @@ const Calls = () => {
     const { logout, user } = useFirebases()
 
     const { calls } = useVideoCall({ user })
+
+    console.log(calls)
     
 
     const handleOpenModal = () => {

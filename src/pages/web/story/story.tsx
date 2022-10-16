@@ -1,6 +1,6 @@
 
 
-
+// TODO: add a story in the new contract
 const Story = () => {
 
     return (

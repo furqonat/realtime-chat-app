@@ -1,4 +1,5 @@
 import { Avatar, Box, Stack, Typography } from "@mui/material";
+import { useContact } from "hooks";
 import { IChatList } from "interfaces";
 import moment from "moment";
 import { useState } from "react";
@@ -33,7 +34,11 @@ const ChatList = (props: { chat: IChatList[], onClick?: (event: string) => void 
 const Item = (props: { chat: IChatList, onClick: (event: string) => void, activeChat: boolean, onSelect: (owner: string) => void }) => {
 
     const { user } = useFirebases()
+    const { contact } = useContact({ user: user, contactId: props.chat.receiver.uid || props.chat.owner})
     const getOwnerDisplayNameOrPhoneNumber = () => {
+        if (contact) {
+            return contact.displayName
+        }
         if (props.chat.owner === user.uid) {
             if (props.chat.receiver.displayName) {
                 return props.chat.receiver.displayName

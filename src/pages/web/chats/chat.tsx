@@ -1,6 +1,7 @@
 import { MoreVertOutlined, NotificationsOutlined, SearchOutlined } from '@mui/icons-material'
 import {
     Box, Grid, IconButton, InputAdornment,
+    MenuItem,
     Modal, OutlinedInput, Popover, Stack, Typography
 } from '@mui/material'
 import { doc, getDoc } from 'firebase/firestore'
@@ -99,16 +100,32 @@ const Chat = () => {
                                     id={'more'}
                                     anchorEl={anchorMore}
                                     onClose={() => setOpenPopup(false)}
+                                    anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'left'
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'left'
+                                    }}
                                     open={openPopup}>
-                                    <Stack spacing={2} direction={'column'} sx={{p: 2}}>
-                                        <Typography
-                                            variant={'body1'}
-                                            onClick={() => handleOpenModal()}
-                                            sx={{cursor: 'pointer'}}>Chat Baru</Typography>
-                                        <Typography
-                                            variant={'body1'}
-                                            onClick={() => handleSignOut()}
-                                            sx={{cursor: 'pointer'}}>Keluar</Typography>
+                                    <Stack direction={'column'}>
+                                        <MenuItem
+                                            onClick={() => handleOpenModal()}>
+                                            <Typography
+                                                variant={'body2'}
+                                                sx={{ cursor: 'pointer' }}>
+                                                Chat Baru
+                                            </Typography>
+                                        </MenuItem>
+                                        <MenuItem onClick={handleSignOut}>
+                                            <Typography
+                                                variant={'body2'}
+                                                onClick={() => handleSignOut()}
+                                                sx={{ cursor: 'pointer' }}>
+                                                Keluar
+                                            </Typography>
+                                        </MenuItem>
                                     </Stack>
                                 </Popover>
                             </Stack>

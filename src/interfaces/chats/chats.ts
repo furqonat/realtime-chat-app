@@ -1,14 +1,12 @@
-interface IChatItem {
-    uid: string,
-    phoneNumber: string,
-    displayName?: string,
-    isIDCardVerified: boolean,
-    photoURL?: string,
+import { IUser } from "interfaces";
+
+interface IChatItem extends IUser {
     lastLogin?: any,
     status: "online" | "typing" | string,
 }
 
 interface IChatMessage {
+    id?: string,
     message: {
         text: string,
         createdAt: string,
@@ -26,6 +24,9 @@ interface IChatMessage {
     },
     type: string,
     read: boolean,
+    visibility: {
+        [key: string]: boolean,
+    },
 }
 
 

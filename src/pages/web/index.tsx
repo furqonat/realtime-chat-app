@@ -21,7 +21,7 @@ interface TabPanelProps {
     style?: React.CSSProperties;
 }
 
-// TODO: move the drawer call in app.tsx if nessesary
+// TODO: move the drawer call in app.tsx if nessesary, and add new story on new contract
 
 const TabPanel = (props: TabPanelProps) => {
     const { children, value, index, style, ...other } = props;
@@ -136,12 +136,12 @@ const Layout = () => {
                         icon={<CallOutlined/>}
                         aria-controls={'vertical-tabpanel-1'}
                         aria-label={'calls'}/>
-                    <Tab
+                    {/* <Tab
                         value={'4'}
                         style={{margin: '15px 0'}}
                         icon={<HistoryToggleOffOutlined/>}
                         aria-controls={'vertical-tabpanel-1'}
-                        aria-label={'stories'}/>
+                        aria-label={'stories'}/> */}
                 </Tabs>
             </Box>
             <TabPanel value={1} index={parseInt(value)} style={{width: '100%'}}>
@@ -162,6 +162,6 @@ const Layout = () => {
 
 
 export { SignInQr, Verification } from './signin'
-export { VideoCall } from './video-call'
+export { VideoCall } from './calls'
 export { Layout }
 
