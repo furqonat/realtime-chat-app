@@ -1,13 +1,11 @@
-import {
-    NotificationsOutlined, MoreVertOutlined, SearchOutlined
-} from "@mui/icons-material"
-import {
-    Grid, Stack, Box, Typography, IconButton, Popover, Modal, OutlinedInput, InputAdornment
-} from "@mui/material"
+import { MoreVertOutlined, NotificationsOutlined, SearchOutlined } from "@mui/icons-material"
+import { Box, Grid, IconButton, InputAdornment, Modal, OutlinedInput, Popover, Stack, Typography } from "@mui/material"
 import { useVideoCall } from "hooks"
+import { ICall } from "interfaces"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useFirebases } from "utils"
+import { CallDetail } from "./call-detail"
 import { CallList } from "./call-list"
 
 
@@ -16,13 +14,19 @@ const Calls = () => {
     const [anchorMore, setAnchorMore] = useState<null | HTMLButtonElement>(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [openModal, setOpenModal] = useState(false)
+    const [call, setCall] = useState<ICall | null>(null)
+    const [innerCalls, setInnerCalls] = useState<ICall[]>([])
+    const [search, setSearch] = useState('')
+    
     const { logout, user } = useFirebases()
+
 
     const { calls } = useVideoCall({ user })
 
-    console.log(calls)
-    
 
+    const handleGetCall = (callId: string) => {
+        setCall(calls.find((call) => call.callId === callId))
+    }
     const handleOpenModal = () => {
         setOpenPopup(false)
         setOpenModal(true)
@@ -41,8 +45,22 @@ const Calls = () => {
     return (
         <Grid wrap='nowrap' container={true}>
             <Grid item={true} xs={6}>
-                <Stack spacing={2} sx={{ position: 'relative', width: '100%' }}>
-                    <Stack spacing={2} sx={{ py: 1.3, px: 3, background: '#f3f5f7' }}>
+                <Stack
+                    spacing={2}
+                    component={'section'}
+                    sx={{
+                        display: 'flex',
+                        height: 'calc(100vh)',
+                        flexFlow: 'column wrap',
+                        position: 'relative', width: '100%'
+                    }}>
+                    <Stack
+                        component={'header'}
+                        spacing={2}
+                        sx={{
+                        py: 1.3, px: 3, background: '#f3f5f7',
+                        display: 'flex'
+                    }}>
                         <Box sx={{
                             width: '100%', display: 'flex',
                             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 2
@@ -82,6 +100,8 @@ const Calls = () => {
                             </Box>
                         </Modal>
                         <OutlinedInput
+                            value={search}
+                            onChange={(e) => {setSearch(e.target.value)}}
                             fullWidth={true}
                             sx={{ width: '100%', height: 40, borderRadius: 10, background: '#fff', p: 1.5 }}
                             placeholder={'Cari Pengilan'}
@@ -92,12 +112,13 @@ const Calls = () => {
                             }
                             size={'small'} />
                     </Stack>
-                    {/*<ChatList chats={''}/>*/}
-                    <CallList calls={calls} />
+                    <CallList calls={calls} filterOptions={search} onClick={handleGetCall} innerCalls={(calls) => setInnerCalls(calls)} />
                 </Stack>
             </Grid>
             <Grid item={true} xs={12}>
-                {/* <ChatItem/> */}
+                {
+                    call !== null && <CallDetail call={call} innerCalls={innerCalls} />
+                }
             </Grid>
         </Grid>
     )

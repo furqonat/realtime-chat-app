@@ -41,12 +41,12 @@ const ChatItem = (props: {user: IChatItem}) => {
     }, [messages])
 
     const handleClickVideoCam = useCallback(() => {
-        navigate(`/video-call/${callId}/call/video`)
-    }, [navigate, callId])
+        window.open(`/video-call/${callId}/call/video/${props.user.phoneNumber}`, '_blank', '')
+    }, [callId, props.user.phoneNumber])
     
     const handleClickCall = useCallback(() => {
-        navigate(`/video-call/${callId}/call/voice`)
-    }, [navigate, callId])
+        window.open(`/video-call/${callId}/call/voice/${props.user.phoneNumber}`, '_blank', '')
+    }, [callId, props.user.phoneNumber])
 
     const handleOpenMore = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMoreEl(event.currentTarget)
@@ -155,7 +155,13 @@ const ChatItem = (props: {user: IChatItem}) => {
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     '&::-webkit-scrollbar': {
-                        display: 'none'
+                        width: '0.4em',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                        borderRadius: '20px'
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#dadada', 
                     },
                     flexDirection: 'column-reverse',
                 }}>

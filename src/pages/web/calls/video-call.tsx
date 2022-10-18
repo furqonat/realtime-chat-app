@@ -1,6 +1,7 @@
 import { CallEnd, Mic, MicOff, Videocam, VideocamOff } from "@mui/icons-material"
 import { Box, CircularProgress, IconButton, Stack, Typography } from "@mui/material"
 import { addDoc, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore"
+import { useUserInfo } from "hooks"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { CallState, db, useFirebases } from "utils"
@@ -20,7 +21,7 @@ let rs: MediaStream = null
 
 const VideoCall = () => {
     
-    let { id, q, callType } = useParams()
+    let { id, q, callType, receiverUid } = useParams()
     const navigate = useNavigate()
     const [isVideo, setIsVideo] = useState(true)
     const [isAudio, setIsAudio] = useState(true)
@@ -28,9 +29,11 @@ const VideoCall = () => {
     const localVideoRef = useRef<HTMLVideoElement>(null)
     const remoteVideoRef = useRef<HTMLVideoElement>(null)
     const { user } = useFirebases()
+    const { userInfo } = useUserInfo({ phoneNumber: receiverUid })
+
+    
 
     useEffect(() => {
-        
         if (id === null && q === null) {
             navigate('/chats')
         }
@@ -46,6 +49,7 @@ const VideoCall = () => {
         const dbRef = doc(db, 'calls', id)
         const offerDbRef = collection(db, 'calls', id, 'offerCandidates')
         const answerDbRef = collection(db, 'calls', id, 'answerCandidates')
+
 
         const setup = async () => {
     
@@ -97,6 +101,18 @@ const VideoCall = () => {
                         callType: callType,
                         callId: id,
                         seen: false,
+                        caller: {
+                            displayName: user?.displayName,
+                            photoURL: user?.photoURL,
+                            phoneNumber: user?.phoneNumber,
+                            uid: user?.uid,
+                        },
+                        receiver: {
+                            displayName: userInfo?.displayName,
+                            photoURL: userInfo?.photoURL,
+                            phoneNumber: userInfo?.phoneNumber,
+                            uid: userInfo?.uid
+                        }
                     })
         
                 }
@@ -181,13 +197,17 @@ const VideoCall = () => {
             }
 
         }
-        if (user?.phoneNumber) {
+        if (user?.phoneNumber && userInfo) {
             setup().then(() => {
                 console.log('setup done')
             })
         }
 
-    }, [id, q, user?.displayName, user?.photoURL, user?.phoneNumber, user, navigate, callType])
+    }, [
+        id, q, user?.displayName, user?.photoURL, user?.phoneNumber, user, navigate,
+        callType, receiverUid, userInfo?.displayName, userInfo?.photoURL, userInfo?.phoneNumber,
+        userInfo
+    ])
 
 
     useEffect(() => {
@@ -274,7 +294,7 @@ const VideoCall = () => {
         updateDoc(dbRef, {
             status: 'ended',
         }).then(() => {
-            navigate('/chats')
+            window.close()
         })
     }
 

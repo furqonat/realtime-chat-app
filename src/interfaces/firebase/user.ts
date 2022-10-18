@@ -1,8 +1,8 @@
 interface IUser {
     uid: string,
-    displayName?: string,
-    photoURL?: string,
-    phoneNumber: string,
-    isIDCardVerified?: boolean
+    displayName?: string | null,
+    photoURL?: string | null,
+    phoneNumber: string | null,
+    isIDCardVerified?: boolean | null
 }
 export { IUser }

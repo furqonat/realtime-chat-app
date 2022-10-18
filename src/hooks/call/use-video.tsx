@@ -39,16 +39,14 @@ const useVideoCall = (props: {user?: IUser}) => {
             const callList = snapshot.docs.map((doc) => doc.data()).filter(data => data.callId.includes(props.user?.uid))
             setCalls(callList as ICall[])
             // console.log(callList)
+            const value = []
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
 
                     const data = change.doc.data()
-                    setCalls((prev) => {
-                        if (data.callId.includes(props.user?.uid)) {
-                            return [...prev, data as ICall]
-                        }
-                        return prev
-                    })
+                    if (data.callId.includes(props.user?.uid)) {
+                        value.push(data)
+                    }
                 }
                 if (change.type === "modified") {
                     const data = change.doc.data()
@@ -57,9 +55,11 @@ const useVideoCall = (props: {user?: IUser}) => {
                     }
                 }
             })
+            setCalls(value.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()) as ICall[])
         })
         return unsubscribe
     }, [props.user?.uid])
+    
     return {
         call,
         calls

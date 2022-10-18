@@ -7,6 +7,18 @@ interface ICall {
     photoURL: string,
     time: string,
     seen: boolean,
+    caller: {
+        uid: string,
+        displayName?: string,
+        phoneNumber: string,
+        photoURL?: string
+    },
+    receiver: {
+        uid: string,
+        displayName?: string,
+        phoneNumber: string,
+        photoURL?: string
+    }
 }
 
 export { ICall }

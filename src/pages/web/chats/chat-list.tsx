@@ -79,7 +79,7 @@ const Item = (props: { chat: IChatList, onClick: (event: string) => void, active
                         }
                     </Typography>
                     <Typography variant={'body2'}>
-                        {props.chat.lastMessage?.text}
+                        {props.chat.lastMessage?.text?.length > 15 ? props.chat.lastMessage?.text?.slice(0, 20) + '...' : props.chat.lastMessage?.text}
                     </Typography>
                 </Stack>
             </Stack>
