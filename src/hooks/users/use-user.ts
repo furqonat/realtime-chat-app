@@ -4,23 +4,26 @@ import { useEffect, useState } from "react";
 import { db } from "utils";
 
 
-const useUserInfo = (props: { phoneNumber: string }) => {
+const useUserInfo = (props: { phoneNumber?: string }) => {
  
     const { phoneNumber } = props;
     const [userInfo, setUserInfo] = useState<IUser | null>(null)
  
     useEffect(() => {
-        const userDoc = doc(db, "users", phoneNumber)
-        getDoc(userDoc).then((doc) => {
-            if (doc.exists()) {
-                setUserInfo(doc.data() as IUser)
-            } else {
-                throw new Error("No such document!")
-            }
-        })
+       if (phoneNumber) {
+           const docRef = doc(db, "users", phoneNumber);
+           const unsubscribe = getDoc(docRef).then((doc) => {
+               if (doc.exists()) {
+                   setUserInfo(doc.data() as IUser)
+               }
+           })
+           return () => unsubscribe
+       } else {
+           return () => {}
+       }
     }, [phoneNumber])
  
     return { userInfo }
 }
 
-export { useUserInfo };
+export { useUserInfo }

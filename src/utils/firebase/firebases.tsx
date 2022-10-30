@@ -46,14 +46,14 @@ const useFirebase = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user && router.pathname !== '/' && router.pathname !== '/signin/qr/verify') {
-                navigate('/')
-            }
-            if (user) {
+            // if (!user && router.pathname !== '/' && router.pathname !== '/signin/qr/verify') {
+            //     navigate('/')
+            // }
+            // if (user) {
+                //     navigate('/chats')
+                //     return
+                // }
                 setUser(formatUser(user))
-                navigate('/chats')
-                return
-            }
         })
 
         return () => unsubscribe()

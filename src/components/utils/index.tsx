@@ -6,7 +6,6 @@ enum RoutePath {
     VERIFY = '/signin/qr/verify',
     TRANSACTIONS = '/transactions',
     VIDEO_CALL = '/video-call/:id/:q/:callType/:receiverUid',
-
 }
 
 export { RoutePath }

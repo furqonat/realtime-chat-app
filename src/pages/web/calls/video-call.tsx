@@ -45,6 +45,8 @@ const VideoCall = () => {
         }
     }, [callType])
 
+    console.log(userInfo)
+
     useEffect(() => {
         const dbRef = doc(db, 'calls', id)
         const offerDbRef = collection(db, 'calls', id, 'offerCandidates')
@@ -197,17 +199,15 @@ const VideoCall = () => {
             }
 
         }
-        if (user?.phoneNumber && userInfo) {
+        if (user?.phoneNumber && userInfo?.phoneNumber) {
             setup().then(() => {
                 console.log('setup done')
             })
         }
 
-    }, [
-        id, q, user?.displayName, user?.photoURL, user?.phoneNumber, user, navigate,
-        callType, receiverUid, userInfo?.displayName, userInfo?.photoURL, userInfo?.phoneNumber,
-        userInfo
-    ])
+    }, [id, q,
+        user?.displayName, user?.photoURL, user?.phoneNumber, user, navigate, callType, receiverUid,
+        userInfo?.displayName, userInfo?.photoURL, userInfo?.phoneNumber, userInfo?.uid])
 
 
     useEffect(() => {
