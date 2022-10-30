@@ -1,17 +1,17 @@
 import {
     Call,
     CallEndOutlined,
-    CallOutlined, ForumOutlined, HistoryToggleOffOutlined, ReceiptLongOutlined
+    CallOutlined, ForumOutlined, PersonOutline, ReceiptLongOutlined
 } from "@mui/icons-material"
 import { Avatar, Box, Drawer, IconButton, Stack, Tab, Tabs, Typography } from "@mui/material"
 import { doc, updateDoc } from "firebase/firestore"
 import { useVideoCall } from "hooks"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useFirebases, db } from "utils"
+import { db, useFirebases } from "utils"
 import { Calls } from "./calls"
 import { Chat } from "./chats"
-import { Story } from "./story"
+import { Person } from "./person"
 import { Transaction } from "./transactions"
 
 interface TabPanelProps {
@@ -136,12 +136,12 @@ const Layout = () => {
                         icon={<CallOutlined/>}
                         aria-controls={'vertical-tabpanel-1'}
                         aria-label={'calls'}/>
-                    {/* <Tab
+                    <Tab
                         value={'4'}
                         style={{margin: '15px 0'}}
-                        icon={<HistoryToggleOffOutlined/>}
+                        icon={<PersonOutline/>}
                         aria-controls={'vertical-tabpanel-1'}
-                        aria-label={'stories'}/> */}
+                        aria-label={'stories'}/>
                 </Tabs>
             </Box>
             <TabPanel value={1} index={parseInt(value)} style={{width: '100%'}}>
@@ -154,14 +154,14 @@ const Layout = () => {
                 <Calls/>
             </TabPanel>
             <TabPanel value={4} index={parseInt(value)} style={{width: '100%'}}>
-                <Story/>
+                <Person/>
             </TabPanel>
         </Box>
     )
 }
 
 
-export { SignInQr, Verification } from './signin'
 export { VideoCall } from './calls'
+export { SignIn, Verification } from './signin'
 export { Layout }
 

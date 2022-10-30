@@ -49,12 +49,11 @@ const useFirebase = () => {
             if (!user && router.pathname !== '/' && router.pathname !== '/signin/qr/verify') {
                 navigate('/')
             }
-            // else if (user) {
-            //     navigate('/chats')
-            //     return
-            // }
-            // return
-            setUser(formatUser(user))
+            if (user) {
+                setUser(formatUser(user))
+                navigate('/chats')
+                return
+            }
         })
 
         return () => unsubscribe()
@@ -174,6 +173,16 @@ const useFirebase = () => {
         }
     }
 
+    const signIn = async (token: string) => {
+        return signInWithCustomToken(auth, token)
+            .then((result) => {
+                setUser(formatUser(result.user))
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
+
     const logout = async () => {
         const dbRef = doc(db, 'users', user.phoneNumber)
         return updateDoc(dbRef, {
@@ -189,7 +198,8 @@ const useFirebase = () => {
         logout,
         user,
         signInWithWhatsApp,
-        verifyCode
+        verifyCode,
+        signIn
     }
 }
 
@@ -199,7 +209,8 @@ const firebaseContext = createContext({
     logout: async () => { },
     user: null as IUser,
     signInWithWhatsApp: async (_phoneNumber: string) => { },
-    verifyCode: async (_code: string, _provider: "phone" | "whatsapp", _nextPage?: string) => { }
+    verifyCode: async (_code: string, _provider: "phone" | "whatsapp", _nextPage?: string) => { },
+    signIn: async (_token: string) => { }
 })
 
 interface FirebaseProviderProps {

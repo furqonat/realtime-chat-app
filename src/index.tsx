@@ -21,7 +21,13 @@ const theme = createTheme({
             dark: '#b28704',
             light: '#ffcd38',
             contrastText: '#000'
-        },
+        }
+    },
+    typography: {
+        fontFamily: [
+            'Roboto',
+            'sans-serif'
+        ].join(','),
     }
 })
 

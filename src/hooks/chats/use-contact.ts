@@ -44,7 +44,7 @@ const useContacts = (props: { user: IUser }) => {
             setContacts(contactList)
         })
         return () => unsubscribe()
-    })
+    }, [props.user.phoneNumber])
 
     return {
         contacts

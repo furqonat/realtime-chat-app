@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, setDoc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, doc, setDoc, updateDoc } from "firebase/firestore"
 import { IChatItem, IUser } from "interfaces"
 import { db } from "utils"
 

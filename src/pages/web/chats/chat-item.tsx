@@ -1,20 +1,17 @@
 import { ArrowDropDown, MoreVertOutlined, Phone, Videocam } from "@mui/icons-material";
 import {
-    Avatar, Box, Card, Dialog, DialogContent, DialogTitle,
-    IconButton, MenuItem, Popover, Stack, Typography,
-    OutlinedInput, Button, DialogActions
+    Avatar, Box, Button, Card, Dialog, DialogActions, DialogContent, DialogTitle,
+    IconButton, MenuItem, OutlinedInput, Popover, Stack, Typography
 } from "@mui/material";
 import { useChats, useContact, useUserStatus } from "hooks";
 import { IChatItem } from "interfaces";
 import moment from "moment";
-import { useCallback, useEffect, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { deleteMessage, useFirebases } from "utils"
-import { ChatInput } from "./chat-input"
+import { useCallback, useEffect, useRef, useState } from "react";
+import { deleteMessage, useFirebases } from "utils";
+import { ChatInput } from "./chat-input";
 
 const ChatItem = (props: {user: IChatItem}) => {
 
-    const navigate = useNavigate()
 
     const ref = useRef<HTMLDivElement>(null)
     const { user } = useFirebases()

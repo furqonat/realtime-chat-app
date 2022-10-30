@@ -1,12 +1,11 @@
 import { doc, updateDoc } from "firebase/firestore";
 import "moment/locale/id";
-import { SignIn } from "pages/mobile";
+import { EntryPoint, SignIn, Verification, VideoCall } from 'pages';
 import { useEffect, useState } from "react";
 import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
 import { RoutePath } from './components/utils';
 import './index.css';
-import { EntryPoint, SignInQr, Verification, VideoCall } from 'pages';
 
 const initBeforeUnload = (user) => {
     window.onbeforeunload = (_event: BeforeUnloadEvent) => {
@@ -18,7 +17,7 @@ const initBeforeUnload = (user) => {
 }
 
 const App = () => {
-    
+
 
     const { user } = useFirebases()
     const [online, setOnline] = useState(document.visibilityState === 'visible')
@@ -52,7 +51,7 @@ const App = () => {
         return () => document.removeEventListener('visibilitychange', handler)
     }, [])
 
-    
+
     return (
         <Routes>
             <Route index element={<SignIn />} />
