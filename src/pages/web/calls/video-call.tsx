@@ -5,6 +5,8 @@ import { useUserInfo } from "hooks"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { CallState, db, useFirebases } from "utils"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import adapter from 'webrtc-adapter';
 
 const server = {
     iceServers: [
@@ -45,7 +47,6 @@ const VideoCall = () => {
         }
     }, [callType])
 
-    console.log(userInfo)
 
     useEffect(() => {
         const dbRef = doc(db, 'calls', id)
@@ -54,7 +55,6 @@ const VideoCall = () => {
 
 
         const setup = async () => {
-    
     
             localStream = await navigator.mediaDevices.getUserMedia({
                 video: callType === 'video',
@@ -122,9 +122,6 @@ const VideoCall = () => {
                     console.log('offer done')
                 })
 
-                // peer.onconnectionstatechange((ev: Event) => {
-                // console.log(ev)
-                // })
 
                 onSnapshot(dbRef, (snapshot) => {
                     const data = snapshot.data()
@@ -149,8 +146,9 @@ const VideoCall = () => {
                 onSnapshot(answerDbRef, (snapshot) => {
                     snapshot.docChanges().forEach(async (change) => {
                         if (change.type === 'added') {
-                            let data = change.doc.data()
-                            await peer.addIceCandidate(new RTCIceCandidate(data))
+                            const data = change.doc.data()
+                            const objectData = JSON.parse(JSON.stringify(data))
+                            await peer.addIceCandidate(new RTCIceCandidate(objectData))
                         }
                     })
                 })

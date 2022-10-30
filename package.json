@@ -27,7 +27,8 @@
     "react-scripts": "^5.0.1",
     "react-toastify": "^9.0.8",
     "socket.io-client": "^4.5.3",
-    "typescript": "^4.8.3"
+    "typescript": "^4.8.3",
+    "webrtc-adapter": "^8.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
