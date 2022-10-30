@@ -11,7 +11,18 @@ import adapter from 'webrtc-adapter';
 const server = {
     iceServers: [
         {
-            urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+            urls: [
+                'stun:stun.l.google.com:19302',
+                'stun:stun1.l.google.com:19302',
+                'stun:stun2.l.google.com:19302',
+                'stun:stun3.l.google.com:19302',
+                'stun:stun4.l.google.com:19302',
+                'stun:stun01.sipphone.com',
+                'stun:stun.ekiga.net',
+                'stun:stun.fwdnet.net',
+                'stun:stun.ideasip.com',
+                'stun:stun.iptel.org',
+            ],
         },
     ],
     iceCandidatePoolSize: 10,
@@ -22,7 +33,7 @@ let localStream: MediaStream = null
 let rs: MediaStream = null
 
 const VideoCall = () => {
-    
+
     let { id, q, callType, receiverUid } = useParams()
     const navigate = useNavigate()
     const [isVideo, setIsVideo] = useState(true)
@@ -33,7 +44,7 @@ const VideoCall = () => {
     const { user } = useFirebases()
     const { userInfo } = useUserInfo({ phoneNumber: receiverUid })
 
-    
+
 
     useEffect(() => {
         if (id === null && q === null) {
@@ -55,7 +66,7 @@ const VideoCall = () => {
 
 
         const setup = async () => {
-    
+
             localStream = await navigator.mediaDevices.getUserMedia({
                 video: callType === 'video',
                 audio: true
@@ -74,60 +85,59 @@ const VideoCall = () => {
             if (remoteVideoRef.current) {
                 remoteVideoRef.current.srcObject = rs
             }
-    
-    
+
+
             if (q === "call") {
-    
-                peer.onicecandidate = (e) => {
+
+                peer.onicecandidate = function (e) {
                     if (e.candidate) {
                         addDoc(offerDbRef, {
                             ...e.candidate.toJSON(),
                         })
                     }
                 }
-                const offerDescription = async () => {
-        
-                    const offerDesc = await peer.createOffer()
-                    await peer.setLocalDescription(offerDesc)
-                    const offer = {
-                        sdp: offerDesc.sdp,
-                        type: offerDesc.type,
-                    }
-                    await setDoc(dbRef, {
-                        offer: offer,
-                        time: new Date().toISOString(),
-                        status: 'calling',
-                        displayName: user?.displayName,
-                        photoURL: user?.photoURL,
-                        phoneNumber: user?.phoneNumber,
-                        callType: callType,
-                        callId: id,
-                        seen: false,
-                        caller: {
+
+                peer.createOffer()
+                    .then((offerDesc) => {
+                        peer.setLocalDescription(offerDesc)
+                        const offer = {
+                            sdp: offerDesc.sdp,
+                            type: offerDesc.type,
+                        }
+                        setDoc(dbRef, {
+                            offer: offer,
+                            time: new Date().toISOString(),
+                            status: 'calling',
                             displayName: user?.displayName,
                             photoURL: user?.photoURL,
                             phoneNumber: user?.phoneNumber,
-                            uid: user?.uid,
-                        },
-                        receiver: {
-                            displayName: userInfo?.displayName,
-                            photoURL: userInfo?.photoURL,
-                            phoneNumber: userInfo?.phoneNumber,
-                            uid: userInfo?.uid
-                        }
+                            callType: callType,
+                            callId: id,
+                            seen: false,
+                            caller: {
+                                displayName: user?.displayName,
+                                photoURL: user?.photoURL,
+                                phoneNumber: user?.phoneNumber,
+                                uid: user?.uid,
+                            },
+                            receiver: {
+                                displayName: userInfo?.displayName,
+                                photoURL: userInfo?.photoURL,
+                                phoneNumber: userInfo?.phoneNumber,
+                                uid: userInfo?.uid
+                            }
+                        }).then(() => {
+                            console.log('offer set')
+                        })
                     })
-        
-                }
-                offerDescription().then(() => {
-                    console.log('offer done')
-                })
-
 
                 onSnapshot(dbRef, (snapshot) => {
                     const data = snapshot.data()
                     if (!peer.currentRemoteDescription && data && data?.answer) {
                         const answerDescription = new RTCSessionDescription(data.answer)
-                        peer.setRemoteDescription(answerDescription)
+                        peer.setRemoteDescription(answerDescription).then(() => {
+                            console.log('answer set')
+                        })
                     }
                     if (data.status === CallState.ENDED) {
                         // close all media stream
@@ -142,13 +152,17 @@ const VideoCall = () => {
                     }
                 })
 
-    
+
                 onSnapshot(answerDbRef, (snapshot) => {
-                    snapshot.docChanges().forEach(async (change) => {
+                    snapshot.docChanges().forEach((change) => {
                         if (change.type === 'added') {
                             const data = change.doc.data()
                             const objectData = JSON.parse(JSON.stringify(data))
-                            await peer.addIceCandidate(new RTCIceCandidate(objectData))
+                            console.log(objectData)
+                            peer.addIceCandidate(new RTCIceCandidate(data))
+                                .then(() => {
+                                    console.log('ice candidate added')
+                                })
                         }
                     })
                 })
@@ -166,22 +180,29 @@ const VideoCall = () => {
                 const offerDescription = callData?.offer
                 await peer.setRemoteDescription(new RTCSessionDescription(offerDescription))
 
-                const answerDesc = await peer.createAnswer()
-                await peer.setLocalDescription(answerDesc)
-                const answer = {
-                    sdp: answerDesc.sdp,
-                    type: answerDesc.type,
-                }
-                await updateDoc(dbRef, {
-                    answer: answer,
-                    status: 'answering',
+                peer.createAnswer().then(answerDesc => {
+                    peer.setLocalDescription(answerDesc)
+                    const answer = {
+                        sdp: answerDesc.sdp,
+                        type: answerDesc.type,
+                    }
+                    updateDoc(dbRef, {
+                        answer: answer,
+                        status: 'answering',
+                    }).then(() => {
+                        console.log('answer set 193')
+                    })
                 })
 
                 onSnapshot(offerDbRef, (snapshot) => {
-                    snapshot.docChanges().forEach(async (change) => {
+                    snapshot.docChanges().forEach((change) => {
                         if (change.type === 'added') {
                             let data = change.doc.data()
-                            await peer.addIceCandidate(new RTCIceCandidate(data))
+                            console.log(data, 'hehehe')
+                            peer.addIceCandidate(new RTCIceCandidate(data))
+                                .then(() => {
+                                    console.log('ice candidate added')
+                                })
                         }
                     })
                 })
@@ -244,6 +265,7 @@ const VideoCall = () => {
 
     useEffect(() => {
         peer.onconnectionstatechange = (e) => {
+            console.log(e)
             switch (peer.connectionState) {
                 case 'new':
                 case 'connecting':
@@ -332,13 +354,13 @@ const VideoCall = () => {
                 <IconButton
                     onClick={handleClickAudio}>
                     {
-                        !isAudio ? <MicOff/> : <Mic/>
+                        !isAudio ? <MicOff /> : <Mic />
                     }
                 </IconButton>
                 <IconButton
                     onClick={handleHangeUp}>
                     <CallEnd
-                        color="error"/>
+                        color="error" />
                 </IconButton>
             </Stack>
             <video
@@ -359,42 +381,42 @@ const VideoCall = () => {
                     height: '100%',
                     position: 'relative',
                 }}>
-                    <video
-                        width={'100%'}
-                        height={'100%'}
-                        style={{
-                            position: 'absolute',
-                        }}
-                        autoPlay
-                        playsInline
-                        ref={remoteVideoRef} />
+                <video
+                    width={'100%'}
+                    height={'100%'}
+                    style={{
+                        position: 'absolute',
+                    }}
+                    autoPlay
+                    playsInline
+                    ref={remoteVideoRef} />
                 {
                     connectionState !== CallState.CONNECTED &&
-                            (
-                            <Box
+                    (
+                        <Box
+                            sx={{
+                                width: '100%',
+                                height: '100%',
+                                position: 'absolute',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
+                            }}>
+                            <Typography
+                                variant='h5'
                                 sx={{
-                                    width: '100%',
-                                    height: '100%',
-                                    position: 'absolute',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexDirection: 'column',
+                                    color: 'white',
                                 }}>
-                                <Typography
-                                    variant='h5'
-                                    sx={{
-                                        color: 'white',
-                                    }}>
-                                    {connectionState}
-                                </Typography>
-                                <CircularProgress />
-                            </Box>
-                        )
+                                {connectionState}
+                            </Typography>
+                            <CircularProgress />
+                        </Box>
+                    )
 
                 }
             </Box>
-            
+
         </Box>
     )
 }
