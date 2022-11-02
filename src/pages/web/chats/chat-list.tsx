@@ -59,7 +59,9 @@ const Item = (props: { chat: IChatList, onClick: (event: string) => void, active
                     display: 'flex',
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 2, px: 2, justifyContent: 'space-between',
+                    gap: 2,
+                    px: 2,
+                    justifyContent: 'space-between',
                     '&:hover': {
                         background: '#f3f5f7',
                         cursor: 'pointer'

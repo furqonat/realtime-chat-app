@@ -4,7 +4,9 @@ import {
     MenuItem, OutlinedInput, Popover, Stack,
     Typography
 } from "@mui/material"
-import { Contacts } from "components"
+import { Contacts, TransactionItem, TransactionList } from "components"
+import { useTransactions } from "hooks"
+import { ITransactions } from "interfaces"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useFirebases } from "utils"
@@ -12,11 +14,18 @@ import { useFirebases } from "utils"
 
 const Transaction = () => {
     const navigate = useNavigate()
-    const { logout } = useFirebases()
+    const { logout, user } = useFirebases()
 
     const [anchorMore, setAnchorMore] = useState<null | HTMLButtonElement>(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [openContacts, setOpenContacts] = useState(false)
+    const [transaction, setTransaction] = useState<ITransactions | null>(null)
+
+
+    const { transactions } = useTransactions({
+        userId: user.uid
+    })
+
 
 
     const handlePopup = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -79,6 +88,9 @@ const Transaction = () => {
                                         </MenuItem>
                                         <Contacts
                                             open={openContacts}
+                                            onDone={(_status: boolean) => {
+                                                setOpenContacts(false)
+                                            }}
                                             onClose={() => setOpenContacts(!openContacts)} />
                                     </Stack>
                                 </Popover>
@@ -87,7 +99,7 @@ const Transaction = () => {
                         <OutlinedInput
                             fullWidth={true}
                             sx={{ width: '100%', height: 40, borderRadius: 10, background: '#fff', p: 1.5 }}
-                            placeholder={'Cari Pesan'}
+                            placeholder={'Cari Transaksi'}
                             endAdornment={
                                 < InputAdornment position={'end'}>
                                     <SearchOutlined />
@@ -96,10 +108,14 @@ const Transaction = () => {
                             size={'small'} />
                     </Stack>
                     {/*<ChatList chats={''}/>*/}
+                    <TransactionList transactions={transactions} onSelect={(e) => setTransaction(e) } />
                 </Stack>
             </Grid>
             <Grid item={true} xs={12}>
                 {/* <ChatItem/> */}
+                {
+                    transaction && <TransactionItem transaction={transaction}/>
+                }
             </Grid>
 
         </Grid>

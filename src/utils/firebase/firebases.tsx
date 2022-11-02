@@ -2,7 +2,9 @@ import axios from "axios"
 import { initializeApp } from "firebase/app"
 import {
     ApplicationVerifier, ConfirmationResult,
-    getAuth, getIdToken, onAuthStateChanged, signInWithCustomToken, signInWithPhoneNumber, signOut, User
+    getAuth, getIdToken, onAuthStateChanged,
+    signInWithCustomToken, signInWithPhoneNumber,
+    signOut, User
 } from "firebase/auth"
 import { doc, getDoc, getFirestore, setDoc, updateDoc } from "firebase/firestore"
 import { IUser } from "interfaces"

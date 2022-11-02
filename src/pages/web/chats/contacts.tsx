@@ -1,7 +1,5 @@
 import {Stack} from "@mui/material";
-interface IContacts {
 
-}
 const Contacts = () => {
 
     return (

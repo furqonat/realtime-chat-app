@@ -11,18 +11,22 @@ import adapter from 'webrtc-adapter';
 const server = {
     iceServers: [
         {
-            urls: [
-                'stun:stun.l.google.com:19302',
-                'stun:stun1.l.google.com:19302',
-                'stun:stun2.l.google.com:19302',
-                'stun:stun3.l.google.com:19302',
-                'stun:stun4.l.google.com:19302',
-                'stun:stun01.sipphone.com',
-                'stun:stun.ekiga.net',
-                'stun:stun.fwdnet.net',
-                'stun:stun.ideasip.com',
-                'stun:stun.iptel.org',
-            ],
+            urls: "stun:openrelay.metered.ca:80",
+        },
+        {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+        },
+        {
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject",
+        },
+        {
+            urls: "turn:openrelay.metered.ca:443?transport=tcp",
+            username: "openrelayproject",
+            credential: "openrelayproject",
         },
     ],
     iceCandidatePoolSize: 10,
@@ -265,7 +269,7 @@ const VideoCall = () => {
 
     useEffect(() => {
         peer.onconnectionstatechange = (e) => {
-            console.log(e)
+            console.log(peer.connectionState)
             switch (peer.connectionState) {
                 case 'new':
                 case 'connecting':
@@ -278,6 +282,7 @@ const VideoCall = () => {
                     setConectionState(CallState.DISCONNECTED)
                     break
                 case 'failed':
+                    peer.restartIce()
                     setConectionState(CallState.FAILED)
                     break
                 case 'closed':
@@ -293,19 +298,21 @@ const VideoCall = () => {
 
     const handleClickVideo = () => {
         setIsVideo(!isVideo)
-        peer.getSenders().forEach(sender => {
-            if (sender.track) {
-                sender.track.enabled = !isVideo
-            }
-        })
+        localStream.getVideoTracks()[0].enabled = !isVideo
+        // peer.getSenders().forEach(sender => {
+        //     if (sender.track) {
+        //         sender.track.enabled = !isVideo
+        //     }
+        // })
     }
     const handleClickAudio = () => {
         setIsAudio(!isAudio)
-        peer.getSenders().forEach(sender => {
-            if (sender.track) {
-                sender.track.enabled = !isAudio
-            }
-        })
+        localStream.getAudioTracks()[0].enabled = !isAudio
+        // peer.getSenders().forEach(sender => {
+        //     if (sender.track) {
+        //         sender.track.enabled = !isAudio
+        //     }
+        // })
     }
     const handleHangeUp = () => {
         localStream?.getTracks().forEach(track => track.stop())
@@ -364,6 +371,7 @@ const VideoCall = () => {
                 </IconButton>
             </Stack>
             <video
+                muted={true}
                 style={{
                     width: 300,
                     height: "20%",

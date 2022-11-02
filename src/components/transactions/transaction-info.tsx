@@ -4,7 +4,7 @@ import {
     OutlinedInput, Radio, RadioGroup,
     Stack, TextField, Typography
 } from "@mui/material"
-import { IContact } from "interfaces"
+import { IContact, TransactionObject } from "interfaces"
 import { useState } from "react"
 
 
@@ -12,12 +12,19 @@ const transactionType = [
     'REKBER',
     'PULBER'
 ]
+
+
 // FIXME: firebase allways read data 
-const TransactionInfo = (props: { contact: IContact }) => {
+const TransactionInfo = (props: {
+    contact: IContact,
+    onClick: (transactions?: TransactionObject) => void
+}) => {
 
     const [title, setTitle] = useState('')
     const [amount, setAmount] = useState('')
     const [fee, setFee] = useState(0)
+    const [type, setType] = useState('REKBER')
+    const [status, setStatus] = useState('legal')
 
     const handleChangeTitle = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setTitle(event.target.value)
@@ -26,24 +33,40 @@ const TransactionInfo = (props: { contact: IContact }) => {
     const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (event.target.value) {
             // accept only number
-            const regex = /^[0-9\b]+$/
-            if (event.target.value === '' || regex.test(event.target.value)) {
+            if (event.target.value !== '' && event.target.value.match(/^[0-9]*$/)) {
                 setAmount(event.target.value)
                 const value = event.target.value
                 if (value) {
                     if (Number(value) > 0) {
-                        
+                        const fees = 10000
                         if (Number(value) <= 5000000) {
-                            setFee(5000)
+                            setFee(fees)
                         } else {
                             const realFee = Number(value) / 5000000
-                            setFee(Math.ceil(realFee) * 5000)
+                            setFee(Math.ceil(realFee) * fees)
                         }
+                        const transactions: TransactionObject = {
+                            transactionName: title,
+                            transactionAmount: Number(event.target.value),
+                            transactionFee: fees,
+                            transactionType: type,
+                            transactionStatus: status,
+                            receiverInfo: props.contact,
+                        }
+                        props.onClick(transactions)
+                    } else {
+                        return
                     }
+                } else {
+                    return
                 }
             }
+        } else {
+            setAmount('')
+            props.onClick()
         }
     }
+
 
     return (
         <Stack
@@ -82,7 +105,12 @@ const TransactionInfo = (props: { contact: IContact }) => {
                         display: 'inline-flex',
                         width: '100%'
                     }}
-                    defaultValue={transactionType[0]}
+                    value={type}
+                    onChange={(_event, newValue) => {
+                        if (newValue) {
+                            setType(newValue)
+                        }
+                    }}
                     size={'small'}
                     options={transactionType}
                     renderInput={(params) => <TextField {...params} />} />
@@ -98,7 +126,12 @@ const TransactionInfo = (props: { contact: IContact }) => {
                     </FormLabel>
                     <RadioGroup
                         row={true}
-                        defaultValue={'legal'}
+                        value={status}
+                        onChange={(_event, newValue) => {
+                            if (newValue) {
+                                setStatus(newValue)
+                            }
+                        }}
                         aria-labelledby={"demo-row-radio-buttons-group-label"}
                         name={"row-radio-buttons-group"}>
                         <FormControlLabel value="legal" control={<Radio size={'small'} />} label="Legal" />
@@ -130,3 +163,4 @@ const TransactionInfo = (props: { contact: IContact }) => {
 }
 
 export { TransactionInfo }
+
