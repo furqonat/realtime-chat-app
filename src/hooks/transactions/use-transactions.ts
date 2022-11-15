@@ -15,7 +15,7 @@ const useTransactions = (props: { userId?: string }) => {
                 const value: ITransactions[] = []
                 snapshots.docs.forEach((doc) => {
 
-                    if (doc.id.includes(props?.userId)) {
+                    if (doc.data().id.includes(props?.userId)) {
                         value.push(doc.data() as ITransactions)
                     }
                 })

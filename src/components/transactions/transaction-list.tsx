@@ -1,6 +1,5 @@
 import { Avatar, Box, Chip, Stack, Typography } from "@mui/material";
 import { ITransactions } from "interfaces";
-import moment from "moment";
 import { useState } from "react";
 
 const TransactionList = (props: {
@@ -68,15 +67,17 @@ const Item = (props: {
                 <Stack spacing={0} direction={'column'}>
                     <Typography variant={'body1'}>
                         {
-                            props.transaction.transactionName?.toString()?.toUpperCase()
+                            props.transaction.transactionName?.toString()
                         }
                     </Typography>
                     <Typography variant={'body2'}>
                         <Chip
                             size={'small'}
                             label={
-                                moment(props.transaction?.createdAt).format('YYYY-MMMM-DD HH:ss')?.toString()?.toLowerCase()
-
+                                Number(props.transaction.transactionAmount).toLocaleString('id-ID', {
+                                    style: 'currency',
+                                    currency: 'IDR'
+                                })
                             }/>
                             
                     </Typography>

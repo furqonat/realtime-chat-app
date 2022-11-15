@@ -24,10 +24,6 @@ const CallList: React.FC<{
 
     const [selected, setSelected] = useState(null)
 
-    // group a call if current call time is within 5 minutes of previous call
-    // and call.callType equal to the same status
-    // and call.phoneNumber equal to the same phoneNumber
-
     const groupCalls = (calls: ICall[]) => {
         const callGroups: ICallGroup[] = []
         let callGroup: ICallGroup = null
@@ -192,8 +188,8 @@ const Item: React.FC<{
                                 call.length > 1 &&
                                 <Chip
                                     size={'small'}
-                                    label={`${call.length} calls`} />
-                                
+                                    label={`${call.length} panggilan`} />
+
                             }
                         </Stack>
                     </Typography>

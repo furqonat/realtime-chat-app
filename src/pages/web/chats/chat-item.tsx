@@ -64,7 +64,7 @@ const ChatItem = (props: {user: IChatItem}) => {
     }
 
     const getContactNameOrPhoneNumber = () => {
-        if (contact?.displayName) {
+        if (contact) {
             return contact.displayName
         } else {
             return props.user.phoneNumber
@@ -75,7 +75,8 @@ const ChatItem = (props: {user: IChatItem}) => {
         saveContact({
             displayName: name,
             phoneNumber: props.user.phoneNumber,
-            uid: props.user.uid
+            uid: props.user.uid,
+            email: props.user.email,
         }).then(() => {
             setOpenDialog(false)
         })

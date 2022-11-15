@@ -4,7 +4,6 @@ import axios from "axios"
 import { doc, setDoc } from "firebase/firestore"
 import { useContacts } from "hooks"
 import { IContact, TransactionObject } from "interfaces"
-import moment from "moment"
 import { useState } from "react"
 import { db, useFirebases } from "utils"
 import { ContactList } from "./contact-list"
@@ -14,6 +13,11 @@ interface IContactsProps {
     open: boolean,
     onClose: () => void,
     onDone?: (success: boolean) => void
+}
+
+const openNewWindow = (url: string) => {
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (newWindow) newWindow.opener = null
 }
 
 // TODO: add new modal for new contact
@@ -50,43 +54,49 @@ const Contacts: React.FC<IContactsProps> = (props) => {
 
     const createTransaction = (transaction: TransactionObject) => {
         setOpenDialog(true)
-        const id = transaction.receiverInfo.uid + user?.uid
-        const dbRef = doc(db, 'transactions', id)
-        console.log(transaction)
-        axios.post(`${process.env.REACT_APP_BIGFLIP_SANBOX_URL}/pwf/bill`, {
-            "amount": Number(transaction.transactionAmount) + transaction.transactionFee,
-            "title": transaction.transactionName,
-            "expire_date": `${moment(new Date().getTime() + 86400000).format('YYYY-MM-DD HH:mm')}`,
-            "type": "SINGLE",
-            "is_address_required": 0,
-            "is_phone_required": 0,
-            "redirect_url": "https://bigflip.id"
+
+        const id = transaction.receiverInfo.uid + user?.uid + new Date().getTime()
+        const orderId = `order-${new Date().getTime()}`
+        const dbRef = doc(db, 'transactions', orderId)
+        axios.post(`${process.env.REACT_APP_SERVER_URL}/transactions/new`, {
+            customer_details: {
+                first_name: transaction.receiverInfo.displayName,
+                phone: transaction.receiverInfo.phoneNumber,
+                email: transaction.receiverInfo.email
+            },
+            amount: transaction.transactionAmount + transaction.transactionFee,
+            order_id: orderId,
         }, {
             headers: {
+                "Accept": "application/json",
                 "Content-Type": "application/json",
-            },
-            auth: {
-                username: `${process.env.REACT_APP_BIGFLIP_SECRET_KEY}`,
-                password: ''
             }
         }).then((response) => {
-            setDoc(dbRef, {
-                id: id,
-                senderPhoneNumber: user?.phoneNumber,
-                senderUid: user?.uid,
-                receiverPhoneNumber: transaction.receiverInfo.phoneNumber,
-                receiverUid: transaction.receiverInfo.uid,
-                ...transaction,
-                createdAt: new Date().toISOString(),
-                status: response.data.status,
-            }).then(() => {
-                setOpenDialog(false)
-                onDone && onDone(true)
-            }).catch(() => {
-                setOpenDialog(false)
-                onDone && onDone(false)
-            })
-        }).catch(() => {
+            if (response.status === 200) {
+                setDoc(dbRef, {
+                    id: id,
+                    senderPhoneNumber: user?.phoneNumber,
+                    senderUid: user?.uid,
+                    senderEmail: user?.email ?? "",
+                    receiverPhoneNumber: transaction.receiverInfo.phoneNumber,
+                    receiverUid: transaction.receiverInfo.uid,
+                    receiverEmail: transaction.receiverInfo.email,
+                    ...transaction,
+                    createdAt: new Date().toISOString(),
+                    status: "pending",
+                    transactionToken: response.data.transactionToken,
+                }).then(() => {
+                    openNewWindow(response.data.transactionToken.redirect_url)
+                    setOpenDialog(false)
+                    onDone && onDone(true)
+                }).catch(() => {
+                    console.log('error')
+                    setOpenDialog(false)
+                    onDone && onDone(false)
+                })
+            }
+        }).catch((error) => {
+            console.log('error', error)
             setOpenDialog(false)
             onDone && onDone(false)
         })

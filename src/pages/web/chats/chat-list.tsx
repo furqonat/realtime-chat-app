@@ -34,7 +34,9 @@ const ChatList = (props: { chat: IChatList[], onClick?: (event: string) => void 
 const Item = (props: { chat: IChatList, onClick: (event: string) => void, activeChat: boolean, onSelect: (owner: string) => void }) => {
 
     const { user } = useFirebases()
-    const { contact } = useContact({ user: user, contactId: props.chat.receiver.uid || props.chat.owner})
+    const { contact } = useContact({
+        user: user, contactId: props.chat.receiver.uid === user?.uid ? props.chat.owner : props.chat.receiver.uid
+    })
     const getOwnerDisplayNameOrPhoneNumber = () => {
         if (contact) {
             return contact.displayName

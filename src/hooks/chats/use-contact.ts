@@ -12,6 +12,8 @@ const useContact = (props: { contactId?: string, user: IUser }) => {
             const unsubscribe = onSnapshot(docRef, (snapshot) => {
                 if (snapshot.exists()) {
                     setContact(snapshot.data() as IContact)
+                } else {
+                    setContact(null)
                 }
             })
             return () => unsubscribe()

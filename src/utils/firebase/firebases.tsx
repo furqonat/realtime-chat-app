@@ -1,4 +1,5 @@
 import axios from "axios"
+import { RoutePath } from "components"
 import { initializeApp } from "firebase/app"
 import {
     ApplicationVerifier, ConfirmationResult,
@@ -11,7 +12,7 @@ import { IUser } from "interfaces"
 import {
     createContext, ReactNode, useContext, useEffect, useState
 } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate, matchPath } from "react-router-dom"
 
 const firebaseConfig = {
     apiKey: `${process.env.REACT_APP_FIREBASE_API_KEY}`,
@@ -34,7 +35,8 @@ const formatUser = (user: IUser) => {
         uid: user.uid,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        phoneNumber: user.phoneNumber
+        phoneNumber: user.phoneNumber,
+        isIDCardVerified: user.isIDCardVerified,
     }
 }
 
@@ -48,14 +50,35 @@ const useFirebase = () => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            // if (!user && router.pathname !== '/' && router.pathname !== '/signin/qr/verify') {
-            //     navigate('/')
-            // }
-            // if (user) {
-                //     navigate('/chats')
-                //     return
-                // }
-                setUser(formatUser(user))
+            if (user) {
+                const docRef = doc(db, "users", user?.phoneNumber)
+                getDoc(docRef).then((doc) => {
+                    console.log("Document data:", doc.data())
+                    const data = doc.data()
+                    const userDoc = {
+                        uid: data.uid,
+                        displayName: data.displayName,
+                        photoURL: data.photoURL,
+                        phoneNumber: data.phoneNumber,
+                        isIDCardVerified: data.isIDCardVerified,
+                    }
+                    if (doc.exists()) {
+                        setUser(formatUser(userDoc))
+                    } else {
+                        setUser(formatUser(user))
+                    }
+                })
+                if (
+                    matchPath(RoutePath.VERIFICATION, router.pathname) ||
+                    matchPath(RoutePath.VIDEO_CALL, router.pathname)
+                ) {
+                    return
+                } else {
+                    navigate('/chats')
+                }
+            }
+        }, (error) => {
+            console.log(error)
         })
 
         return () => unsubscribe()
