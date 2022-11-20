@@ -3,36 +3,33 @@ import googlePlay from 'assets/images/google-play-badge.png';
 import logo from 'assets/images/logo.png';
 import mask from 'assets/images/mask-signin.svg';
 import { useSignIn } from "hooks";
-import { encrypt } from "lib";
-import { useEffect } from "react";
 import QRCode from "react-qr-code";
-import { useFirebases } from "utils";
 
 
 const SignIn: React.FC = () => {
 
-  const { verificationId, token } = useSignIn()
-  const { signIn } = useFirebases()
-  
+  const { verificationId } = useSignIn()
+  // const { signIn } = useFirebases()
 
-  useEffect(() => {
 
-    const hash = encrypt("secret salt")
-    const data = JSON.stringify({
-      phoneNumber: "+12345678911",
-      verificationId: verificationId,
-    }).toString()
-    const hash2 = hash(data)
-    console.log(hash2)
-  }, [verificationId])
+  // useEffect(() => {
 
-  useEffect(() => {
-    if (token) {
-      signIn(token).then((res) => {
-        console.log(res,)
-      })
-    }
-  }, [signIn, token])
+  //   const hash = encrypt(`${process.env.REACT_APP_SALT}`)
+  //   const data = JSON.stringify({
+  //     phoneNumber: "+12345678911",
+  //     verificationId: verificationId,
+  //   }).toString()
+  //   const hash2 = hash(data)
+  //   console.log(hash2)
+  // }, [verificationId])
+
+  // useEffect(() => {
+  //   if (token) {
+  //     signIn(token).then((res) => {
+  //       console.log(res,)
+  //     })
+  //   }
+  // }, [signIn, token])
 
 
   return (
@@ -115,4 +112,5 @@ const SignIn: React.FC = () => {
   )
 }
 
-export { SignIn }
+export { SignIn };
+
