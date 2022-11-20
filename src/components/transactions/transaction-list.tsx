@@ -20,7 +20,7 @@ const TransactionList = (props: {
                             activeChat={active === transaction.id}
                             key={transaction.id}
                             onClick={(e) => setActive(e)}
-                            onSelect={(e) => {props?.onSelect && props.onSelect(e)}}
+                            onSelect={(e) => { props?.onSelect && props.onSelect(e) }}
                             transaction={transaction} />
                     )
                 })
@@ -37,6 +37,36 @@ const Item = (props: {
     onClick?: (uid: string) => void,
     onSelect?: (transaction: ITransactions) => void
 }) => {
+
+    const getStatus = (status: string) => {
+        switch (status) {
+            case 'ACTIVE':
+                return 'Aktif'
+            case 'pending':
+                return 'Pending'
+            case 'settlement':
+                return 'Sukses'
+            case 'expire':
+                return 'Kadaluarsa'
+            default:
+                return 'Aktif'
+        }
+    }
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'ACTIVE':
+                return 'blue'
+            case 'pending':
+                return 'yellow'
+            case 'settlement':
+                return 'green'
+            case 'expire':
+                return 'red'
+            default:
+                return 'blue'
+        }
+    }
 
     return (
         <Box
@@ -78,12 +108,16 @@ const Item = (props: {
                                     style: 'currency',
                                     currency: 'IDR'
                                 })
-                            }/>
-                            
+                            } />
+
                     </Typography>
                 </Stack>
             </Stack>
-            <Typography variant={'body2'}>{props?.transaction?.transactionType?.toString()?.toLowerCase()}</Typography>
+            <Typography
+                color={
+                    getStatusColor(props.transaction?.status)
+                }
+                variant={'body2'}>{getStatus(props?.transaction?.status)}</Typography>
         </Box>
     )
 }

@@ -17,5 +17,10 @@ interface ITransactions extends TransactionObject {
     receiverPhoneNumber: string,
     createdAt: string,
     status: string,
+    transactionToken?: {
+        redirect_url: string,
+        token: string
+    } | null,
+    payment_type?: string | null,
 }
 export { TransactionObject, ITransactions }

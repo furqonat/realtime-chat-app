@@ -1,10 +1,65 @@
-import { Avatar, Box, Grid, Paper, Stack, Typography } from "@mui/material"
-import { useFirebases } from "utils"
+import { EditOutlined } from "@mui/icons-material"
+import { Avatar, Box, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, OutlinedInput, Paper, Stack, Typography } from "@mui/material"
+import { doc, updateDoc } from "firebase/firestore"
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
+import { useVerification } from "hooks"
+import { useState } from "react"
+import { db, useFirebases } from "utils"
 
 
 const Person = () => {
 
     const { user } = useFirebases()
+    const { verification } = useVerification({
+        phoneNumber: user?.phoneNumber
+    })
+
+    const [name, setName] = useState(user?.displayName ?? '')
+    const [email, setEmail] = useState(user?.email ?? '')
+    const [avatar, setAvatar] = useState(user?.photoURL ?? '')
+    const [dialog, setDialog] = useState(false)
+    const [progress, setProgress] = useState(0)
+
+
+    const handleChangeName = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setName(e.target.value)
+    }
+    const handleChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value)
+    }
+
+    const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files[0]
+        if (file) {
+            setProgress(0)
+            setDialog(true)
+            const storage = getStorage()
+            const docRef = doc(db, 'users', `${user.phoneNumber}`)
+            const storageRef = ref(storage, `${user.phoneNumber}/avatar/${file.name}`)
+            const task = uploadBytesResumable(storageRef, file)
+            task.on('state_changed', (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                setProgress(progress)
+            }, (error) => {
+                console.log(error)
+            }, () => {
+                console.log('upload success')
+                getDownloadURL(task.snapshot.ref).then((url) => {
+                    setAvatar(url)
+                    updateDoc(docRef, {
+                        photoURL: url
+                    }).then(() => {
+                        setDialog(false)
+                        setProgress(0)
+                    })
+                })
+            })
+        }
+    }
+
+    const openNewTab = (url: string) => {
+        window.open(url, '_blank', 'noopener,noreferrer')
+    }
 
     return (
         <Box
@@ -27,6 +82,7 @@ const Person = () => {
                         spacing={2}
                         alignItems={'center'}>
                         <Avatar
+                            src={avatar}
                             sx={{
                                 width: 50,
                                 height: 50
@@ -39,72 +95,137 @@ const Person = () => {
                     </Stack>
                 </Stack>
             </Paper>
-            <Grid container>
-                <Grid item xs={4}>
-                    <Stack
-                        sx={{
-                            display: 'flex',
-                            flex: 1,
-                            p: 2,
-                            gap: 2,
-                            overflowY: 'auto',
-                            '&::-webkit-scrollbar': {
-                                display: 'none'
-                            }
-                        }}
-                        component={'main'}
-                        direction={'column'}>
-
-                        <Typography variant={'h5'}>Pengaturan</Typography>
-                        <Stack
+            <Stack
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 2,
+                    gap: 2,
+                    flex: 1,
+                    overflowY: 'auto',
+                }}>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}>
+                    <label
+                        style={{
+                            cursor: 'pointer'
+                        }}>
+                        <Avatar
                             sx={{
-                                display: 'flex',
-                                flex: 1,
-                                flexDirection: 'column',
-                                overflowY: 'auto',
-                                '&::-webkit-scrollbar': {
-                                    display: 'none'
-                                },
-
+                                width: 100,
+                                height: 100
                             }}
-                            component={'section'}>
-                            <Box
-                                sx={{
-                                    cursor: 'pointer',
-                                    py: 2,
-                                    px: 1,
-                                    '&:hover': {
-                                        background: '#f3f5f7',
-                                        cursor: 'pointer'
-                                    }
-                                }}>
-                                <Typography
-                                    variant={'body1'}>
-                                    Ubah Informasi Akun
-                                </Typography>
-                            </Box>
+                            src={avatar}
+                            component={'image'} />
+                        <input type="file" hidden={true} onChange={handleChangeAvatar} />
+                    </label>
+                </Box>
+                <Typography variant={'h6'}>Informasi Umum</Typography>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 2
+                }}>
+                    <OutlinedInput
+                        value={name}
+                        onChange={handleChangeName}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Nama Lengkap'} />
+                    <OutlinedInput
+                        value={user?.phoneNumber}
+                        disabled={true}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Nomor Telepone'} />
+                </Box>
 
-                            <Box
-                                sx={{
-                                    cursor: 'pointer',
-                                    py: 2,
-                                    px: 1,
-                                    '&:hover': {
-                                        background: '#f3f5f7',
-                                        cursor: 'pointer'
-                                    }
-                                }}>
-                                <Typography
-                                    variant={'body1'}>
-                                    Ubah Informasi Akun
-                                </Typography>
-                            </Box>
-                        </Stack>
-                    </Stack>
-                </Grid>
-                <Grid item xs={12}>
-                </Grid>
-            </Grid>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 2
+                }}>
+                    <OutlinedInput
+                        value={email}
+                        onChange={handleChangeEmail}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Email'} />
+                </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2
+                    }}>
+                    <Typography variant={'h6'}>Informasi Data Diri</Typography>
+                    <IconButton
+                        onClick={() => {
+                            openNewTab('/account/verify')
+                        }}>
+                        <EditOutlined />
+                    </IconButton>
+                </Box>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 2
+                }}>
+                    <OutlinedInput
+                        disabled={true}
+                        value={verification?.name}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Nama Lengkap'} />
+                    <OutlinedInput
+                        value={verification?.nik}
+                        disabled={true}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'NIK'} />
+                </Box>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 2
+                }}>
+                    <OutlinedInput
+                        disabled={true}
+                        value={verification?.address}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Alamat'} />
+                    <OutlinedInput
+                        value={verification?.dob}
+                        disabled={true}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Tanggal Lahir'} />
+                </Box>
+            </Stack>
+
+            <Dialog
+                open={dialog}>
+                <DialogTitle>Upload Avatar</DialogTitle>
+                <DialogContent>
+                    <CircularProgress variant="determinate" value={progress} />
+                </DialogContent>
+            </Dialog>
+
         </Box>
     )
 }

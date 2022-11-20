@@ -66,9 +66,19 @@ const Transaction = () => {
                 xs={6}>
                 <Stack
                     spacing={2}
-                    sx={{ position: 'relative', width: '100%' }}>
+                    sx={{
+                        position: 'relative',
+                        width: '100%',
+                        height: 'calc(100vh)',
+                    }}>
                     <Stack
-                        spacing={2} sx={{ py: 1.3, px: 3, background: '#f3f5f7' }}>
+                        spacing={2}
+                        sx={{
+                            py: 1.3,
+                            px: 3,
+                            background: '#f3f5f7',
+                            display: 'flex'
+                        }}>
                         <Box
                             sx={{
                                 width: '100%', display: 'flex',
@@ -137,9 +147,28 @@ const Transaction = () => {
                             }
                             size={'small'} />
                     </Stack>
-                    <TransactionList
-                        transactions={transactions}
-                        onSelect={(e) => setTransaction(e)} />
+                    <Stack
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            width: '100%',
+                            flex: 1,
+                            overflowY: 'auto',
+                            '&::-webkit-scrollbar': {
+                                width: '0.4em'
+                            },
+                            '&::-webkit-scrollbar-track': {
+                                boxShadow: 'inset 0 0 6px rgba(0,0,0,0.00)',
+                                webkitBoxShadow: 'inset 0 0 6px rgba(0,0,0,0.00)'
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                backgroundColor: 'rgba(0,0,0,.1)',
+                            }
+                        }}>
+                        <TransactionList
+                            transactions={transactions}
+                            onSelect={(e) => setTransaction(e)} />
+                    </Stack>
                 </Stack>
                 <Dialog
                     onClose={handleCloseAlertDialog}

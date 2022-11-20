@@ -1,7 +1,8 @@
-import { Alert, Divider, Paper, Snackbar, Stack, Typography } from "@mui/material"
+import { Alert, Button, Divider, Paper, Snackbar, Stack, Typography } from "@mui/material"
 import { ITransactions } from "interfaces"
 import moment from "moment"
 import { useState } from "react"
+import { useFirebases } from "utils"
 
 const TransactionItem = (props: { transaction: ITransactions }) => {
 
@@ -13,10 +14,18 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
         transactionType,
         transactionStatus,
         id,
+        transactionToken,
+        payment_type,
+        senderUid
     } = props.transaction
 
 
     const [alertDialog, setAlertDialog] = useState(false)
+    const { user } = useFirebases()
+
+    const openInNewTab = (url: string) => {
+        window.open(url, '_blank', 'noopener,noreferrer')
+    }
 
     return (
         <Stack
@@ -119,8 +128,39 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                             </Stack>
                         </Stack>
                         <Divider />
-                        <Stack>
-
+                        <Stack
+                            sx={{
+                                mt: 2
+                            }}>
+                            {
+                                status !== 'ACTIVE' && status !== 'settlement' ? (
+                                    <Stack
+                                        direction={'row'}
+                                        justifyContent={'space-between'}>
+                                        {
+                                            transactionToken && senderUid === user?.uid && status !== 'expire' ? (
+                                                <Button
+                                                    onClick={() => openInNewTab(transactionToken.redirect_url)}
+                                                    variant={'contained'}>
+                                                    Bayar
+                                                </Button>
+                                            ) : null
+                                        }
+                                    </Stack>
+                                ) : (
+                                    <Stack
+                                        direction={'row'}
+                                        justifyContent={'space-between'}>
+                                        <Typography
+                                            variant={'body2'}>
+                                            Metode Pembayaran
+                                        </Typography>
+                                        {
+                                            payment_type && (<span>{payment_type}</span>)
+                                        }
+                                    </Stack>
+                                )
+                            }
                         </Stack>
                     </Stack>
                 </Paper>

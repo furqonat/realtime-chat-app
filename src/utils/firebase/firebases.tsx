@@ -37,6 +37,7 @@ const formatUser = (user: IUser) => {
         photoURL: user.photoURL,
         phoneNumber: user.phoneNumber,
         isIDCardVerified: user.isIDCardVerified,
+        email: user.email,
     }
 }
 
@@ -61,6 +62,7 @@ const useFirebase = () => {
                         photoURL: data.photoURL,
                         phoneNumber: data.phoneNumber,
                         isIDCardVerified: data.isIDCardVerified,
+                        email: data.email,
                     }
                     if (doc.exists()) {
                         setUser(formatUser(userDoc))
@@ -197,6 +199,7 @@ const useFirebase = () => {
             }
         }
     }
+
 
     const signIn = async (token: string) => {
         return signInWithCustomToken(auth, token)
