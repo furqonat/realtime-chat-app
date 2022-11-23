@@ -28,8 +28,10 @@ const Verification = () => {
     const [address, setAddress] = useState('')
     const [file, setFile] = useState<File | null>(null)
     const [birthDate, setBirthDate] = useState('')
+    const [bankName, setBankName] = useState('')
+    const [bankAccount, setBankAccount] = useState('')
+    const [bankAccountName, setBankAccountName] = useState('')
 
-    console.log(verification)
 
     // dialog
     const [open, setOpen] = useState(false)
@@ -38,20 +40,23 @@ const Verification = () => {
 
     useEffect(() => {
         if (
-            image.length > 1 &&
-            name.length > 5 &&
+            image.length > 0 &&
+            name.length > 0 &&
             nik.length > 10 &&
-            address.length > 5 &&
-            displayName.length > 5 &&
-            phoneNumber.length > 10 &&
-            email.length > 5 && 
-            birthDate.length > 2
+            address.length > 0 &&
+            displayName.length > 0 &&
+            phoneNumber.length > 5 &&
+            email.length > 2 &&
+            birthDate.length > 2 &&
+            bankName.length > 0 &&
+            bankAccount.length > 0 &&
+            bankAccountName.length > 0
         ) {
             setDisable(false)
         } else {
             setDisable(true)
         }
-    }, [address.length, birthDate.length, displayName.length, email.length, file, image.length, name.length, nik.length, phoneNumber.length, user])
+    }, [address.length, bankAccount.length, bankAccountName.length, bankName.length, birthDate.length, displayName.length, email.length, file, image.length, name.length, nik.length, phoneNumber.length, user])
 
     useEffect(() => {
         if (user) {
@@ -65,6 +70,9 @@ const Verification = () => {
             setNik(verification.nik ?? '')
             setAddress(verification.address ?? '')
             setBirthDate(verification.dob ?? '')
+            setBankName(verification.bankName ?? '')
+            setBankAccount(verification.bankAccount ?? '')
+            setBankAccountName(verification.bankAccountName ?? '')
         }
     }, [user, verification])
 
@@ -122,6 +130,16 @@ const Verification = () => {
     const handleChangeBirthDate = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setBirthDate(e.target.value)
     }
+    const handleChangeBankName = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setBankName(e.target.value)
+    }
+
+    const handleChangeBankAccount = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setBankAccount(e.target.value)
+    }
+    const handleChangeBankAccountName = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setBankAccountName(e.target.value)
+    }
 
     const handleOnSubmit = () => {
         if (!disable) {
@@ -147,7 +165,10 @@ const Verification = () => {
                             address: address,
                             image: downloadURL,
                             dob: birthDate,
-                            date: new Date().toISOString()
+                            date: new Date().toISOString(),
+                            bankName: bankName,
+                            bankAccount: bankAccount,
+                            bankAccountName: bankAccountName,
                         }).then(() => {
                             setOpen(false)
                             navigate('/chats')
@@ -334,6 +355,44 @@ const Verification = () => {
                             placeholder={'Tanggal Lahir'}
                             size={'small'} />
                     </Stack>
+                </Stack>
+                <Stack
+                    gap={1}>
+                    <Typography variant={'h6'}>
+                        Informasi Data Perbankan
+                    </Typography>
+                    <Stack
+                        direction={'row'}
+                        justifyContent={'space-between'}
+                        gap={2}>
+                        <OutlinedInput
+                            value={bankAccount}
+                            fullWidth={true}
+                            onChange={handleChangeBankAccount}
+                            sx={{
+                                borderRadius: '10px'
+                            }}
+                            placeholder={'Nomor Rekening'}
+                            size={'small'} />
+                        <OutlinedInput
+                            value={bankAccountName}
+                            fullWidth={true}
+                            onChange={handleChangeBankAccountName}
+                            sx={{
+                                borderRadius: '10px'
+                            }}
+                            placeholder={'Atas Nama'}
+                            size={'small'} />
+                    </Stack>
+                    <OutlinedInput
+                        value={bankName}
+                        fullWidth={true}
+                        onChange={handleChangeBankName}
+                        sx={{
+                            borderRadius: '10px'
+                        }}
+                        placeholder={'Atas Nama'}
+                        size={'small'} />
                 </Stack>
                 <Stack
                     justifyContent={'flex-end'}

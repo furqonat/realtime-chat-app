@@ -9,7 +9,10 @@ interface Verification {
     name: string,
     nik: string,
     dob?: string,
-    date?: string
+    date?: string,
+    bankName?: string,
+    bankAccount?: string,
+    bankAccountName?: string,
 }
 
 const useVerification = (props: {
@@ -20,7 +23,6 @@ const useVerification = (props: {
 
     useEffect(() => {
         if (props?.phoneNumber) {
-            console.log('useVerification', props.phoneNumber)
             const docRef = doc(db, 'users', props.phoneNumber, 'verification', props.phoneNumber)
             const unsubscribe = onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {

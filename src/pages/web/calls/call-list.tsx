@@ -3,7 +3,7 @@ import {
     CallMissedOutlined, CallOutlined, CallReceived, Videocam
 } from "@mui/icons-material"
 import { Avatar, Box, Chip, IconButton, Stack, Typography } from "@mui/material"
-import { useContact } from "hooks"
+import { useContact, useUserInfo } from "hooks"
 import { ICall } from "interfaces"
 import moment from "moment"
 import { useState } from "react"
@@ -109,6 +109,9 @@ const Item: React.FC<{
     const { call, onClick, onSelect, selected, filters } = props
     const { user } = useFirebases()
     const { contact } = useContact({ user: user, contactId: user.uid === call.caller.uid ? call.receiver.uid : call.caller.uid })
+    const { userInfo } = useUserInfo({
+        phoneNumber: user.uid === call.caller.uid ? call.receiver.phoneNumber : call.caller.phoneNumber
+    })
 
     const getOwnerDisplayNameOrPhoneNumber = () => {
         if (contact) {
@@ -169,7 +172,9 @@ const Item: React.FC<{
                 background: selected ? '#f3f5f7' : 'none'
             }}>
             <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{ py: 2 }}>
-                <Avatar sx={{ width: 40, height: 40 }} src={call.receiver.photoURL} />
+                <Avatar
+                    sx={{ width: 40, height: 40 }}
+                    src={userInfo?.photoURL} />
                 <Stack spacing={0} direction={'column'}>
                     <Typography variant={'body1'}>
                         {

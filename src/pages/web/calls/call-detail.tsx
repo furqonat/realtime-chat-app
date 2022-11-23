@@ -1,7 +1,7 @@
 import { CallMade, CallMissed, CallMissedOutgoing, CallOutlined, CallReceived, Videocam } from "@mui/icons-material"
 import { Avatar, Box, IconButton, Typography } from "@mui/material"
 import { Stack } from "@mui/system"
-import { useContact } from "hooks"
+import { useContact, useUserInfo } from "hooks"
 import { ICall } from "interfaces"
 import moment from "moment"
 import { CallState, useFirebases } from "utils"
@@ -22,13 +22,9 @@ const CallDetail: React.FC<{ call: ICall, innerCalls?: ICall[] }> = (props) => {
         return props.call.phoneNumber === user?.phoneNumber ? props.call.receiver.phoneNumber : props.call.caller.phoneNumber
     }
 
-    const getPhotoURL = () => {
-        if (props.call.phoneNumber === user?.phoneNumber) {
-            return props.call.receiver.photoURL
-        } else {
-            return props.call.caller.photoURL
-        }
-    }
+    const { userInfo } = useUserInfo({
+        phoneNumber: user.uid === props.call.caller.uid ? props.call.receiver.phoneNumber : props.call.caller.phoneNumber
+    })
 
     const getCallStatusIcon = (call: ICall): {title: string, icon: React.ReactNode} => {
         if (call.phoneNumber === user.phoneNumber) {
@@ -94,7 +90,7 @@ const CallDetail: React.FC<{ call: ICall, innerCalls?: ICall[] }> = (props) => {
                             height: 40,
                             mr: 2
                         }}
-                        src={getPhotoURL()} />
+                        src={userInfo?.photoURL} />
                     <Stack direction={'column'} spacing={0}>
                         <Typography
                             variant={'body1'}>

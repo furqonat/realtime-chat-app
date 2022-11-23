@@ -12,7 +12,7 @@ import { TransactionInfo } from "./transaction-info"
 interface IContactsProps {
     open: boolean,
     onClose: () => void,
-    onDone?: (success: boolean) => void
+    onDone?: (success: boolean) => void,
 }
 
 const openNewWindow = (url: string) => {

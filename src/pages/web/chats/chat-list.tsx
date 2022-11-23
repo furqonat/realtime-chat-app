@@ -1,5 +1,5 @@
 import { Avatar, Box, Stack, Typography } from "@mui/material";
-import { useContact } from "hooks";
+import { useContact, useUserInfo } from "hooks";
 import { IChatList } from "interfaces";
 import moment from "moment";
 import { useState } from "react";
@@ -37,17 +37,17 @@ const Item = (props: { chat: IChatList, onClick: (event: string) => void, active
     const { contact } = useContact({
         user: user, contactId: props.chat.receiver.uid === user?.uid ? props.chat.owner : props.chat.receiver.uid
     })
+    const { userInfo } = useUserInfo({
+        phoneNumber: props.chat?.owner === user?.uid ? props.chat?.receiver.phoneNumber : props.chat?.ownerPhoneNumber
+    })
     const getOwnerDisplayNameOrPhoneNumber = () => {
         if (contact) {
             return contact.displayName
         }
         if (props.chat.owner === user.uid) {
-            if (props.chat.receiver.displayName) {
-                return props.chat.receiver.displayName
-            }
             return props.chat.receiver.phoneNumber
         }
-        return props.chat.ownerDisplayName || props.chat.ownerPhoneNumber
+        return props.chat.ownerPhoneNumber
     }
 
     return (
@@ -74,8 +74,10 @@ const Item = (props: { chat: IChatList, onClick: (event: string) => void, active
                         background: 'white',
                     })
                 }}>
-            <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{py: 2}}>
-                <Avatar sx={{ width: 40, height: 40 }} />
+            <Stack direction={'row'} alignItems={'center'} spacing={2} sx={{ py: 2 }}>
+                <Avatar
+                    src={userInfo?.photoURL}
+                    sx={{ width: 40, height: 40 }}/>
                 <Stack spacing={0} direction={'column'}>
                     <Typography variant={'body1'}>
                         {

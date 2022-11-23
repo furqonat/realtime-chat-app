@@ -1,21 +1,29 @@
 import { ArrowDropDown, MoreVertOutlined, Phone, Videocam } from "@mui/icons-material";
 import {
-    Avatar, Box, Button, Card, Dialog, DialogActions, DialogContent, DialogTitle,
+    Avatar, Box, Button, Card, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle,
     IconButton, MenuItem, OutlinedInput, Popover, Stack, Typography
 } from "@mui/material";
+import axios from "axios";
+import { TransactionInfo } from "components/transactions/transaction-info";
+import { doc, setDoc } from "firebase/firestore";
 import { useChats, useContact, useUserStatus } from "hooks";
-import { IChatItem } from "interfaces";
+import { IChatItem, TransactionObject } from "interfaces";
 import moment from "moment";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { deleteMessage, useFirebases } from "utils";
+import { db, deleteMessage, useFirebases } from "utils";
 import { ChatInput } from "./chat-input";
 
-const ChatItem = (props: {user: IChatItem}) => {
+const openNewWindow = (url: string) => {
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (newWindow) newWindow.opener = null
+}
+
+const ChatItem = (props: { user: IChatItem }) => {
 
 
     const ref = useRef<HTMLDivElement>(null)
     const { user } = useFirebases()
-    
+
     const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
     const callId = id + new Date().getTime()
     const { messages } = useChats({ id: id, user: user })
@@ -29,10 +37,76 @@ const ChatItem = (props: {user: IChatItem}) => {
     const [openDialog, setOpenDialog] = useState(false)
 
     const [name, setName] = useState(props.user?.displayName || '')
+    const [transactionDialog, setTransactionDialog] = useState(false)
+    const [transaction, setTransaction] = useState<TransactionObject | null>(null)
+    const [dialogLoading, setDialogLoading] = useState(false)
+    const [dialogMessage, setDialogMessage] = useState(false)
 
 
+    const handleNewTransaction = () => {
+        if (props.user?.isIDCardVerified) {
+            setTransactionDialog(!transactionDialog)
+        } else {
+            setDialogMessage(true)
+        }
+    }
 
-   
+    const handleCreateTransaction = () => {
+        if (transaction) {
+            createTransaction(transaction)
+        } else {
+            setTransactionDialog(false)
+        }
+    }
+
+    const createTransaction = (transaction: TransactionObject) => {
+        setDialogLoading(true)
+        const id = transaction.receiverInfo.uid + user?.uid + new Date().getTime()
+        const orderId = `order-${new Date().getTime()}`
+        const dbRef = doc(db, 'transactions', orderId)
+        axios.post(`${process.env.REACT_APP_SERVER_URL}/transactions/new`, {
+            customer_details: {
+                first_name: transaction.receiverInfo.displayName,
+                phone: transaction.receiverInfo.phoneNumber,
+                email: transaction.receiverInfo.email
+            },
+            amount: transaction.transactionAmount + transaction.transactionFee,
+            order_id: orderId,
+        }, {
+            headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        }).then((response) => {
+            if (response.status === 200) {
+                setDoc(dbRef, {
+                    id: id,
+                    senderPhoneNumber: user?.phoneNumber,
+                    senderUid: user?.uid,
+                    senderEmail: user?.email ?? "",
+                    receiverPhoneNumber: transaction.receiverInfo.phoneNumber,
+                    receiverUid: transaction.receiverInfo.uid,
+                    receiverEmail: transaction.receiverInfo?.email ?? "",
+                    ...transaction,
+                    createdAt: new Date().toISOString(),
+                    status: "pending",
+                    transactionToken: response.data.transactionToken,
+                }).then(() => {
+                    openNewWindow(response.data.transactionToken.redirect_url)
+                    setDialogLoading(false)
+                    setTransactionDialog(false)
+                    setTransaction(null)
+                }).catch((e) => {
+                    console.log('error', e)
+                    setDialogLoading(false)
+                })
+            }
+        }).catch((error) => {
+            console.log('error', error)
+            setOpenDialog(false)
+        })
+    }
+
     useEffect(() => {
         ref.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
@@ -40,7 +114,7 @@ const ChatItem = (props: {user: IChatItem}) => {
     const handleClickVideoCam = useCallback(() => {
         window.open(`/video-call/${callId}/call/video/${props.user.phoneNumber}`, '_blank', '')
     }, [callId, props.user.phoneNumber])
-    
+
     const handleClickCall = useCallback(() => {
         window.open(`/video-call/${callId}/call/voice/${props.user.phoneNumber}`, '_blank', '')
     }, [callId, props.user.phoneNumber])
@@ -55,12 +129,12 @@ const ChatItem = (props: {user: IChatItem}) => {
     }
 
     const handleDeleteMessage = () => {
-            deleteMessage({
-                id: id, messageId: selectedId, user: user,
-                receiver: props.user
-            }).then(() => {
-            })
-            setMessageOptionsEl(null)
+        deleteMessage({
+            id: id, messageId: selectedId, user: user,
+            receiver: props.user
+        }).then(() => {
+        })
+        setMessageOptionsEl(null)
     }
 
     const getContactNameOrPhoneNumber = () => {
@@ -86,13 +160,13 @@ const ChatItem = (props: {user: IChatItem}) => {
         <Box
             component={'section'}
             sx={{
-            width: '100%',
-            display: 'flex',
-            height: 'calc(100vh)',
-            gap: 2,
-            flexFlow: 'column wrap',
-            justifyContent: 'space-between'
-        }}>
+                width: '100%',
+                display: 'flex',
+                height: 'calc(100vh)',
+                gap: 2,
+                flexFlow: 'column wrap',
+                justifyContent: 'space-between'
+            }}>
             <Stack
                 component={'header'}
                 sx={{
@@ -114,6 +188,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                         }}>
                         <Stack spacing={2} direction={'row'} sx={{ p: 1 }}>
                             <Avatar
+                                src={props.user?.photoURL}
                                 sx={{ width: 40, height: 40 }} />
                             <Stack spacing={0} direction={'column'}>
                                 <Typography variant={'body1'}>{
@@ -159,7 +234,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                         borderRadius: '20px'
                     },
                     '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: '#dadada', 
+                        backgroundColor: '#dadada',
                     },
                     flexDirection: 'column-reverse',
                 }}>
@@ -245,7 +320,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                                                     moment(item.message.createdAt).locale('id').fromNow()
                                                 }</Typography>
                                         </Stack>
-                                        
+
                                     </Stack>
                                 </Box>
                             )
@@ -258,7 +333,7 @@ const ChatItem = (props: {user: IChatItem}) => {
             </Stack>
             <ChatInput
                 user={props.user} />
-            
+
             <Popover
                 open={Boolean(messageOptionsEl)}
                 anchorEl={messageOptionsEl}
@@ -282,7 +357,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                     horizontal: 'right',
                 }}
                 onClose={() => setMoreEl(null)}>
-                
+
                 <Stack direction={'column'}>
                     {
                         !contact && (
@@ -306,6 +381,10 @@ const ChatItem = (props: {user: IChatItem}) => {
                         disabled={true}>
                         <Typography variant={'body2'}>Mute notifications</Typography>
                     </MenuItem>
+                    <MenuItem
+                        onClick={handleNewTransaction}>
+                        <Typography variant={'body2'}>Buat Transaksi</Typography>
+                    </MenuItem>
                 </Stack>
             </Popover>
 
@@ -325,7 +404,7 @@ const ChatItem = (props: {user: IChatItem}) => {
                         placeholder={'Name'}
                         value={name}
                         onChange={(event) => setName(event.target.value)} />
-                    
+
                 </DialogContent>
                 <DialogActions>
                     <Button
@@ -338,7 +417,72 @@ const ChatItem = (props: {user: IChatItem}) => {
                     </Button>
                 </DialogActions>
             </Dialog>
-           
+
+            <Dialog
+                open={transactionDialog}
+                onClose={() => setTransactionDialog(false)}>
+                <DialogTitle>
+                    <Typography variant={'h6'}>Buat Transaksi</Typography>
+                </DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2}>
+                        <TransactionInfo
+                            contact={{
+                                displayName: props?.user?.displayName,
+                                phoneNumber: props?.user?.phoneNumber,
+                                uid: props.user.uid
+                            }}
+                            onClick={(transactions?: TransactionObject) => {
+                                if (transactions) {
+                                    setTransaction(transactions)
+                                } else {
+                                    setTransaction(null)
+                                }
+                            }} />
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        variant={'outlined'}
+                        onClick={() => setTransactionDialog(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleCreateTransaction}
+                        disabled={!transaction}
+                        variant="contained">
+                        Buat Transaksi
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={dialogLoading}>
+                <DialogContent>
+                    <Stack
+                        direction={'column'}
+                        spacing={2}
+                        alignItems={'center'}
+                        justifyContent={'center'}>
+                        <CircularProgress />
+                    </Stack>
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                onClose={() => setDialogMessage(false)}
+                open={dialogMessage}>
+                <DialogTitle>
+                    <Typography variant={'h6'}>Akun ini belum terverifikasi!</Typography>
+                </DialogTitle>
+                
+                <DialogContent>
+                    <Stack
+                        direction={'column'}
+                        spacing={2}>
+                        Transaksi hanya bisa dilakukan apa bila akun yang dituju sudah terverifikasi.
+                    </Stack>
+                    </DialogContent>
+            </Dialog>
         </Box>
     )
 }

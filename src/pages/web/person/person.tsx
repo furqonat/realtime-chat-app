@@ -66,6 +66,7 @@ const Person = () => {
             sx={{
                 display: 'flex',
                 flexDirection: 'column',
+                height: 'calc(100vh)',
             }}>
             <Paper
                 variant={'outlined'}
@@ -102,7 +103,16 @@ const Person = () => {
                     p: 2,
                     gap: 2,
                     flex: 1,
-                    overflowY: 'auto',
+                    overflow: 'auto',
+                    '&::-webkit-scrollbar': {
+                        width: '0.4em',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                        borderRadius: '20px'
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#dadada',
+                    }
                 }}>
                 <Box sx={{
                     display: 'flex',
@@ -216,6 +226,39 @@ const Person = () => {
                         fullWidth={true}
                         placeholder={'Tanggal Lahir'} />
                 </Box>
+
+                <Stack
+                    gap={2}>
+                    <Typography variant="h6">
+                        Informasi Bank
+                    </Typography>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2
+                    }}>
+                        <OutlinedInput
+                            disabled={true}
+                            value={verification?.bankAccount?.replace(/./g, "*")}
+                            size={'small'}
+                            fullWidth={true}
+                            placeholder={'NO Rekening'} />
+                        <OutlinedInput
+                            value={verification?.bankAccountName}
+                            disabled={true}
+                            size={'small'}
+                            fullWidth={true}
+                            placeholder={'Nama Bank'} />
+                    </Box>
+                    <OutlinedInput
+                        value={verification?.bankName}
+                        disabled={true}
+                        size={'small'}
+                        fullWidth={true}
+                        placeholder={'Nama Bank'} />
+                </Stack>
             </Stack>
 
             <Dialog
