@@ -28,7 +28,7 @@ const ChatItem = (props: { user: IChatItem }) => {
     const callId = id + new Date().getTime()
     const { messages } = useChats({ id: id, user: user })
 
-    const { status } = useUserStatus({ phoneNumber: props.user.phoneNumber })
+    const { status } = useUserStatus({ uid: props.user.uid })
     const { contact, saveContact } = useContact({ contactId: props.user.uid, user: user })
 
     const [moreEl, setMoreEl] = useState<null | HTMLElement>(null)
@@ -64,7 +64,7 @@ const ChatItem = (props: { user: IChatItem }) => {
         const id = transaction.receiverInfo.uid + user?.uid + new Date().getTime()
         const orderId = `order-${new Date().getTime()}`
         const dbRef = doc(db, 'transactions', orderId)
-        axios.post(`${process.env.REACT_APP_SERVER_URL}/transactions/new`, {
+        axios.post(`${import.meta.env.VITE_APP_SERVER_URL}/transactions/new`, {
             customer_details: {
                 first_name: transaction.receiverInfo.displayName,
                 phone: transaction.receiverInfo.phoneNumber,
@@ -112,12 +112,12 @@ const ChatItem = (props: { user: IChatItem }) => {
     }, [messages])
 
     const handleClickVideoCam = useCallback(() => {
-        window.open(`/video-call/${callId}/call/video/${props.user.phoneNumber}`, '_blank', '')
-    }, [callId, props.user.phoneNumber])
+        window.open(`/video-call/${callId}/call/video/${props.user.uid}`, '_blank', '')
+    }, [callId, props.user.uid])
 
     const handleClickCall = useCallback(() => {
-        window.open(`/video-call/${callId}/call/voice/${props.user.phoneNumber}`, '_blank', '')
-    }, [callId, props.user.phoneNumber])
+        window.open(`/video-call/${callId}/call/voice/${props.user.uid}`, '_blank', '')
+    }, [callId, props.user.uid])
 
     const handleOpenMore = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMoreEl(event.currentTarget)
@@ -141,14 +141,14 @@ const ChatItem = (props: { user: IChatItem }) => {
         if (contact) {
             return contact.displayName
         } else {
-            return props.user.phoneNumber
+            return props.user.uid
         }
     }
 
     const handleAddContact = () => {
         saveContact({
             displayName: name,
-            phoneNumber: props.user.phoneNumber,
+            phoneNumber: props.user.uid,
             uid: props.user.uid,
             email: props.user.email,
         }).then(() => {

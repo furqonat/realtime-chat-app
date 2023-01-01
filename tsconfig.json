@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
     "jsx": "preserve",
-    "lib": ["es6", "dom"],
+    "lib": [
+      "DOM.Iterable",
+      "dom",
+      "ESNext"
+    ],
     "rootDir": "src",
-    "module": "commonjs",
-    "target": "ES2015",
+    "module": "ESNext",
+    "target": "ESNext",
     "sourceMap": true,
     "moduleResolution": "node",
     "noImplicitReturns": true,
@@ -15,7 +19,11 @@
     "src"
   ],
   "exclude": [
-    "node_modules",
     "build"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

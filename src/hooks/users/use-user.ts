@@ -4,25 +4,25 @@ import { useEffect, useState } from "react";
 import { db } from "utils";
 
 
-const useUserInfo = (props: { phoneNumber?: string }) => {
- 
-    const { phoneNumber } = props;
+const useUserInfo = (props: { uid?: string }) => {
+
+    const { uid } = props;
     const [userInfo, setUserInfo] = useState<IUser | null>(null)
- 
+
     useEffect(() => {
-       if (phoneNumber) {
-           const docRef = doc(db, "users", phoneNumber);
-           const unsubscribe = getDoc(docRef).then((doc) => {
-               if (doc.exists()) {
-                   setUserInfo(doc.data() as IUser)
-               }
-           })
-           return () => unsubscribe
-       } else {
-           return () => {}
-       }
-    }, [phoneNumber])
- 
+        if (uid) {
+            const docRef = doc(db, "users", uid);
+            const unsubscribe = getDoc(docRef).then((doc) => {
+                if (doc.exists()) {
+                    setUserInfo(doc.data() as IUser)
+                }
+            })
+            return () => unsubscribe
+        } else {
+            return () => { }
+        }
+    }, [uid])
+
     return { userInfo }
 }
 

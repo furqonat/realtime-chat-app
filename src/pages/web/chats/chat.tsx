@@ -5,11 +5,10 @@ import {
     Modal, OutlinedInput, Popover, Stack, Typography
 } from '@mui/material'
 import { doc, getDoc } from 'firebase/firestore'
-import { useAppDispatch, useAppSelector, useChats } from 'hooks'
+import { useChats } from 'hooks'
 import { IChatItem } from 'interfaces'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { setChatItem } from 'redux/openMessageReducer'
 import { db, useFirebases } from 'utils'
 import { ChatItem } from "./chat-item"
 import { ChatList } from './chat-list'
@@ -18,8 +17,6 @@ import { ChatList } from './chat-list'
 
 const Chat = () => {
     
-    const chatItem = useAppSelector(state => state.openMessage.chaItem)
-    const dispatch = useAppDispatch()
     
     const navigate = useNavigate()
     const { logout } = useFirebases()
@@ -28,7 +25,7 @@ const Chat = () => {
     const [openModal, setOpenModal] = useState(false)
     const [query, setQuery] = useState('')
     const [error, setError] = useState(false)
-    const [users, setUsers] = useState(chatItem)
+    const [users, setUsers] = useState(null)
 
     const { user } = useFirebases()
     
@@ -71,7 +68,6 @@ const Chat = () => {
         const dbRef = doc(db, 'users', event)
         getDoc(dbRef).then(docSnap => {
             if (docSnap.exists()) {
-                dispatch(setChatItem(docSnap.data() as IChatItem))
                 setUsers(docSnap.data() as IChatItem)
             }
         })

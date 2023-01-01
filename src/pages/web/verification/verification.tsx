@@ -13,7 +13,7 @@ const Verification = () => {
 
     const { user } = useFirebases()
     const { verification } = useVerification({
-        phoneNumber: user?.phoneNumber
+        uid: user?.phoneNumber
     })
     const navigate = useNavigate()
 

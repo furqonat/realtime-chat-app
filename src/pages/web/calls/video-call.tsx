@@ -46,7 +46,7 @@ const VideoCall = () => {
     const localVideoRef = useRef<HTMLVideoElement>(null)
     const remoteVideoRef = useRef<HTMLVideoElement>(null)
     const { user } = useFirebases()
-    const { userInfo } = useUserInfo({ phoneNumber: receiverUid })
+    const { userInfo } = useUserInfo({ uid: receiverUid })
 
 
 

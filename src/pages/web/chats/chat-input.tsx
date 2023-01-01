@@ -1,3 +1,4 @@
+window.global ||= window
 import { uuidv4 } from "@firebase/util"
 import {
     CancelOutlined, EmojiEmotionsOutlined, ImageOutlined, MicOutlined, SendOutlined
@@ -25,7 +26,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
     const [modalImage, setModalImage] = useState(false)
     const [error, setError] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
-    
+
     const { user } = useFirebases()
 
     const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
@@ -50,7 +51,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         }
     }
 
-    const getMessageText = (co: {msg?: string, download: string}) => {
+    const getMessageText = (co: { msg?: string, download: string }) => {
         if (message.trim().length > 0) {
             return message
         }
@@ -65,14 +66,14 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         sendMessage({
             receiver: props.user,
             user: user,
-            message: msg !== undefined ? getMessageText({msg: msg, download: ""}) : getMessageText({download: imgURL, msg: ""}),
+            message: msg !== undefined ? getMessageText({ msg: msg, download: "" }) : getMessageText({ download: imgURL, msg: "" }),
             type: getMessageType(msg),
             id: id,
             lastMessageType: getLastMessageType(msg),
         })
         setMessage('')
     }
-    
+
     const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
             sendMessages()
@@ -124,7 +125,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         setIsUploading(true)
         const storage = getStorage()
         const imageType = image?.type.split('/')[1]
-        const imageRef = ref(storage, `${user?.phoneNumber}/${id}/${uuidv4()}.${imageType}`)
+        const imageRef = ref(storage, `${user?.uid}/${id}/${uuidv4()}.${imageType}`)
         const task = uploadBytesResumable(imageRef, image)
         task.on('state_changed', (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
@@ -147,7 +148,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
             sx={{
                 width: '100%',
             }}>
-            
+
             <Box
                 sx={{
                     background: '#f3f5f7',
@@ -173,7 +174,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                 </IconButton>
                 <OutlinedInput
                     autoFocus={true}
-                    value={message} 
+                    value={message}
                     onChange={handleChange}
                     onKeyDown={handleEnter}
                     size={'small'}
@@ -239,7 +240,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                             variant={'filled'}>
                             Tidak boleh melebihi dari 3MB
                         </Alert>
-                        
+
                     </Collapse>
                     <img
                         width={300}
@@ -275,7 +276,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                 anchorEl={anchorEl}
                 onClose={() => setAnchorEl(null)}
                 sx={{
-                    p:2
+                    p: 2
                 }}
                 anchorOrigin={{
                     vertical: 'top',

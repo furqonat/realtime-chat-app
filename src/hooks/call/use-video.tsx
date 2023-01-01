@@ -18,7 +18,7 @@ const useVideoCall = (props: {user?: IUser}) => {
                     if (data.time && new Date(data.time).getTime() > Date.now() - 120000 &&
                         data.callId.includes(props.user?.uid) &&
                         data.status === 'calling' &&
-                        data.phoneNumber !== props.user?.phoneNumber) {
+                        data.uid !== props.user?.uid) {
                         setCall(data as ICall)
                     }
                 }
@@ -31,7 +31,7 @@ const useVideoCall = (props: {user?: IUser}) => {
             })
         })
         return unsubscribe
-    }, [props.user?.uid, props.user?.phoneNumber])
+    }, [props.user?.uid, props.user?.uid])
 
     useEffect(() => {
         const dbRef = collection(db, 'calls')

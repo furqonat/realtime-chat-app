@@ -10,7 +10,7 @@ const CallDetail: React.FC<{ call: ICall, innerCalls?: ICall[] }> = (props) => {
     
     const { user } = useFirebases()
     const { contact } = useContact({
-        contactId: props.call.phoneNumber === user?.phoneNumber ? props.call.receiver.uid : props.call.caller.uid,
+        contactId: props.call.caller.uid === user?.uid ? props.call.receiver.uid : props.call.caller.uid,
         user: user
     })
     const id = user.uid === props.call.caller.uid ? user.uid + props.call.receiver.uid : props.call.receiver.uid + user.uid
@@ -23,11 +23,11 @@ const CallDetail: React.FC<{ call: ICall, innerCalls?: ICall[] }> = (props) => {
     }
 
     const { userInfo } = useUserInfo({
-        phoneNumber: user.uid === props.call.caller.uid ? props.call.receiver.phoneNumber : props.call.caller.phoneNumber
+        uid: user.uid === props.call.caller.uid ? props.call.receiver.uid : props.call.caller.uid
     })
 
     const getCallStatusIcon = (call: ICall): {title: string, icon: React.ReactNode} => {
-        if (call.phoneNumber === user.phoneNumber) {
+        if (call.caller.uid === user.uid) {
             if (call.status === CallState.UNANSWERED) {
                 return {
                     title: "Tidak Terjawab",
@@ -55,11 +55,11 @@ const CallDetail: React.FC<{ call: ICall, innerCalls?: ICall[] }> = (props) => {
     }
 
     const handleClickVideoCam = () => {
-        window.open(`/video-call/${callId}/call/video/${props.call.phoneNumber === user.phoneNumber ? props.call.receiver.phoneNumber : props.call.phoneNumber}`, '_blank', '')
+        window.open(`/video-call/${callId}/call/video/${props.call.caller.uid === user.uid ? props.call.receiver.uid : props.call.caller.uid}`, '_blank', '')
     }
     
     const handleClickCall = () => {
-        window.open(`/video-call/${callId}/call/voice/${props.call.phoneNumber === user.phoneNumber ? props.call.receiver.phoneNumber : props.call.phoneNumber}`, '_blank', '')
+        window.open(`/video-call/${callId}/call/voice/${props.call.caller.uid === user.uid ? props.call.receiver.uid : props.call.caller.uid}`, '_blank', '')
     }
     return (
         <Stack

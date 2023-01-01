@@ -7,21 +7,21 @@ import {
     signInWithCustomToken, signInWithPhoneNumber,
     signOut, User
 } from "firebase/auth"
-import { doc, getDoc, getFirestore, setDoc, updateDoc } from "firebase/firestore"
+import { doc, getDoc, getFirestore, onSnapshot, setDoc, updateDoc } from "firebase/firestore"
 import { IUser } from "interfaces"
 import {
     createContext, ReactNode, useContext, useEffect, useState
 } from "react"
-import { useLocation, useNavigate, matchPath } from "react-router-dom"
+import { matchPath, useLocation, useNavigate } from "react-router-dom"
 
 const firebaseConfig = {
-    apiKey: `${process.env.REACT_APP_FIREBASE_API_KEY}`,
-    authDomain: `${process.env.REACT_APP_FIREBASE_AUTH_DOMAIN}`,
-    projectId: `${process.env.REACT_APP_FIREBASE_PROJECT_ID}`,
-    storageBucket: `${process.env.REACT_APP_FIREBASE_STORAGE_BUCKET}`,
-    messagingSenderId: `${process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID}`,
-    appId: `${process.env.REACT_APP_FIREBASE_APP_ID}`,
-    measurementId: `${process.env.REACT_APP_FIREBASE_MEASUREMENT_ID}`
+    apiKey: `${import.meta.env.VITE_APP_FIREBASE_API_KEY}`,
+    authDomain: `${import.meta.env.VITE_APP_FIREBASE_AUTH_DOMAIN}`,
+    projectId: `${import.meta.env.VITE_APP_FIREBASE_PROJECT_ID}`,
+    storageBucket: `${import.meta.env.VITE_APP_FIREBASE_STORAGE_BUCKET}`,
+    messagingSenderId: `${import.meta.env.VITE_APP_FIREBASE_MESSAGING_SENDER_ID}`,
+    appId: `${import.meta.env.VITE_APP_FIREBASE_APP_ID}`,
+    measurementId: `${import.meta.env.VITE_APP_FIREBASE_MEASUREMENT_ID}`
 }
 
 const app = initializeApp(firebaseConfig)
@@ -52,9 +52,24 @@ const useFirebase = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                const docRef = doc(db, "users", user?.phoneNumber)
-                getDoc(docRef).then((doc) => {
-                    console.log("Document data:", doc.data())
+                const docRef = doc(db, "users", user?.uid)
+                // getDoc(docRef).then((doc) => {
+                //     const data = doc.data()
+                //     const userDoc = {
+                //         uid: data.uid,
+                //         displayName: data.displayName,
+                //         photoURL: data.photoURL,
+                //         phoneNumber: data.phoneNumber,
+                //         isIDCardVerified: data.isIDCardVerified,
+                //         email: data.email,
+                //     }
+                //     if (doc.exists()) {
+                //         setUser(formatUser(userDoc))
+                //     } else {
+                //         setUser(formatUser(user))
+                //     }
+                // })
+                onSnapshot(docRef, (doc) => {
                     const data = doc.data()
                     const userDoc = {
                         uid: data.uid,
@@ -67,12 +82,12 @@ const useFirebase = () => {
                     if (doc.exists()) {
                         setUser(formatUser(userDoc))
                     } else {
-                        setUser(formatUser(user))
+                        setUser(null)
                     }
                 })
                 if (
                     matchPath(RoutePath.VERIFICATION, router.pathname) ||
-                    matchPath(RoutePath.VIDEO_CALL, router.pathname) || 
+                    matchPath(RoutePath.VIDEO_CALL, router.pathname) ||
                     matchPath(RoutePath.ABOUT, router.pathname) ||
                     matchPath(RoutePath.PRIVACY, router.pathname)
                 ) {
@@ -91,7 +106,7 @@ const useFirebase = () => {
 
     const assignUser = async (user: User, nextPage?: string) => {
         const dbRef = getFirestore(app)
-        const docRef = doc(dbRef, 'users', `${user.phoneNumber}`)
+        const docRef = doc(dbRef, 'users', `${user.uid}`)
         const data = await getDoc(docRef)
         if (data.exists()) {
             updateDoc(docRef, {
@@ -100,7 +115,7 @@ const useFirebase = () => {
                 nextPage && navigate(nextPage)
             })
         } else {
-            setDoc(doc(dbRef, 'users', user.phoneNumber), {
+            setDoc(doc(dbRef, 'users', user.uid), {
                 phoneNumber: user.phoneNumber,
                 uid: user.uid,
                 displayName: user.displayName,
@@ -126,7 +141,7 @@ const useFirebase = () => {
         setPhone(phoneNumber)
         // send message to whatsapp
         const code = Math.floor(100000 + Math.random() * 900000)
-        const sendMessage = await axios.post(`${process.env.REACT_APP_FB_BASE_URL}/${process.env.REACT_APP_PHONE_NUMBER_ID}/messages`, {
+        const sendMessage = await axios.post(`${import.meta.env.VITE_APP_FB_BASE_URL}/${import.meta.env.VITE_APP_PHONE_NUMBER_ID}/messages`, {
             messaging_product: 'whatsapp',
             to: phoneNumber.replace('+', ''),
             type: 'template',
@@ -150,7 +165,7 @@ const useFirebase = () => {
         }, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.REACT_APP_FB_TOKEN}`
+                'Authorization': `Bearer ${import.meta.env.VITE_APP_FB_TOKEN}`
             }
         })
         if (sendMessage.status === 200) {
@@ -164,7 +179,7 @@ const useFirebase = () => {
                 confirmationResult.confirm(code)
                     .then(async result => {
                         assignUser(result.user, nextPage)
-                        axios.post(`${process.env.REACT_APP_SERVER_URL}/claims`, {
+                        axios.post(`${import.meta.env.VITE_APP_SERVER_URL}/claims`, {
                             token: await getIdToken(result.user),
                             phoneNumber: phone
                         }).then(async res => {
@@ -181,13 +196,13 @@ const useFirebase = () => {
             }
         } else if (provider === "whatsapp") {
             if (verificationCode === parseInt(code)) {
-                const wa = await axios.post(`${process.env.REACT_APP_SERVER_URL}/whatsapp`, {
+                const wa = await axios.post(`${import.meta.env.VITE_APP_SERVER_URL}/whatsapp`, {
                     phoneNumber: phone
                 })
                 if (wa.status === 200) {
                     signInWithCustomToken(auth, wa.data.token).then(async result => {
                         assignUser(result.user, nextPage)
-                        axios.post(`${process.env.REACT_APP_SERVER_URL}/claims`, {
+                        axios.post(`${import.meta.env.VITE_APP_SERVER_URL}/claims`, {
                             token: await getIdToken(result.user),
                             phoneNumber: phone
                         }).then(async res => {
@@ -214,7 +229,7 @@ const useFirebase = () => {
     }
 
     const logout = async () => {
-        const dbRef = doc(db, 'users', user.phoneNumber)
+        const dbRef = doc(db, 'users', user.uid)
         return updateDoc(dbRef, {
             status: new Date().toISOString()
         }).then(() => {

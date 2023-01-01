@@ -16,14 +16,14 @@ interface Verification {
 }
 
 const useVerification = (props: {
-    phoneNumber?: string
+    uid?: string
 }) => {
 
     const [verification, setVerification] = useState<Verification | null>(null)
 
     useEffect(() => {
-        if (props?.phoneNumber) {
-            const docRef = doc(db, 'users', props.phoneNumber, 'verification', props.phoneNumber)
+        if (props?.uid) {
+            const docRef = doc(db, 'users', props.uid, 'verification', props.uid)
             const unsubscribe = onSnapshot(docRef, (doc) => {
                 if (doc.exists()) {
                     setVerification(doc.data() as Verification)
@@ -33,7 +33,7 @@ const useVerification = (props: {
         } else {
             return () => { }
         }
-    }, [props?.phoneNumber])
+    }, [props?.uid])
     return { verification }
 }
 
