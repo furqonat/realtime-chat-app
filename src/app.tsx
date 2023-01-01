@@ -1,6 +1,6 @@
 import { doc, updateDoc } from "firebase/firestore";
 import "moment/locale/id";
-import { EntryPoint, SignIn, Verification, VerificationID, VideoCall } from 'pages';
+import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages';
 import { useEffect, useState } from "react";
 import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
@@ -59,6 +59,8 @@ const App = () => {
             <Route path={RoutePath.VERIFY} element={<Verification />} />
             <Route path={RoutePath.VIDEO_CALL} element={<VideoCall />} />
             <Route path={RoutePath.VERIFICATION} element={<VerificationID />} />
+            <Route path={RoutePath.ABOUT} element={<About />} />
+            <Route path={RoutePath.PRIVACY} element={<Privacy />} />
         </Routes>
     )
 }

@@ -171,4 +171,6 @@ export { VideoCall } from './calls'
 export { SignIn, Verification } from './signin'
 export { Layout }
 export { Verification as VerificationID } from './verification'
+export { About } from './about'
+export { Privacy } from './privacy'
 

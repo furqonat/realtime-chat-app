@@ -72,7 +72,9 @@ const useFirebase = () => {
                 })
                 if (
                     matchPath(RoutePath.VERIFICATION, router.pathname) ||
-                    matchPath(RoutePath.VIDEO_CALL, router.pathname)
+                    matchPath(RoutePath.VIDEO_CALL, router.pathname) || 
+                    matchPath(RoutePath.ABOUT, router.pathname) ||
+                    matchPath(RoutePath.PRIVACY, router.pathname)
                 ) {
                     return
                 } else {
