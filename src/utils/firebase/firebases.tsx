@@ -44,7 +44,7 @@ const formatUser = (user: IUser) => {
 const useFirebase = () => {
     const router = useLocation()
     const navigate = useNavigate()
-    const [user, setUser] = useState<IUser>(null)
+    const [user, setUser] = useState<IUser | null>(null)
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
     const [verificationCode, setVerificationCode] = useState(0)
     const [phone, setPhone] = useState('')
@@ -53,34 +53,22 @@ const useFirebase = () => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 const docRef = doc(db, "users", user?.uid)
-                // getDoc(docRef).then((doc) => {
-                //     const data = doc.data()
-                //     const userDoc = {
-                //         uid: data.uid,
-                //         displayName: data.displayName,
-                //         photoURL: data.photoURL,
-                //         phoneNumber: data.phoneNumber,
-                //         isIDCardVerified: data.isIDCardVerified,
-                //         email: data.email,
-                //     }
-                //     if (doc.exists()) {
-                //         setUser(formatUser(userDoc))
-                //     } else {
-                //         setUser(formatUser(user))
-                //     }
-                // })
                 onSnapshot(docRef, (doc) => {
                     const data = doc.data()
-                    const userDoc = {
-                        uid: data.uid,
-                        displayName: data.displayName,
-                        photoURL: data.photoURL,
-                        phoneNumber: data.phoneNumber,
-                        isIDCardVerified: data.isIDCardVerified,
-                        email: data.email,
-                    }
-                    if (doc.exists()) {
-                        setUser(formatUser(userDoc))
+                    if (data) {
+                        const userDoc = {
+                            uid: data.uid,
+                            displayName: data.displayName,
+                            photoURL: data.photoURL,
+                            phoneNumber: data.phoneNumber,
+                            isIDCardVerified: data.isIDCardVerified,
+                            email: data.email,
+                        }
+                        if (doc.exists()) {
+                            setUser(formatUser(userDoc))
+                        } else {
+                            setUser(null)
+                        }
                     } else {
                         setUser(null)
                     }
@@ -139,7 +127,6 @@ const useFirebase = () => {
 
     const signInWithWhatsApp = async (phoneNumber: string) => {
         setPhone(phoneNumber)
-        // send message to whatsapp
         const code = Math.floor(100000 + Math.random() * 900000)
         const sendMessage = await axios.post(`${import.meta.env.VITE_APP_FB_BASE_URL}/${import.meta.env.VITE_APP_PHONE_NUMBER_ID}/messages`, {
             messaging_product: 'whatsapp',
@@ -229,12 +216,14 @@ const useFirebase = () => {
     }
 
     const logout = async () => {
-        const dbRef = doc(db, 'users', user.uid)
-        return updateDoc(dbRef, {
-            status: new Date().toISOString()
-        }).then(() => {
-            signOut(auth)
-        })
+        if (user) {
+            const dbRef = doc(db, 'users', user.uid)
+            return updateDoc(dbRef, {
+                status: new Date().toISOString()
+            }).then(() => {
+                signOut(auth)
+            })
+        }
     }
 
     return {
@@ -252,7 +241,7 @@ const firebaseContext = createContext({
     confirmationResult: null as ConfirmationResult | null,
     signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { },
     logout: async () => { },
-    user: null as IUser,
+    user: null as IUser | null | IUser ,
     signInWithWhatsApp: async (_phoneNumber: string) => { },
     verifyCode: async (_code: string, _provider: "phone" | "whatsapp", _nextPage?: string) => { },
     signIn: async (_token: string) => { }

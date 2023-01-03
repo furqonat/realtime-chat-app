@@ -18,18 +18,18 @@ const openNewWindow = (url: string) => {
     if (newWindow) newWindow.opener = null
 }
 
-const ChatItem = (props: { user: IChatItem }) => {
+const ChatItem = (props: { user: IChatItem | null }) => {
 
 
     const ref = useRef<HTMLDivElement>(null)
     const { user } = useFirebases()
 
-    const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
+    const id = user?.uid > props.user?.uid ? user?.uid + props.user?.uid : props.user?.uid + user?.uid
     const callId = id + new Date().getTime()
     const { messages } = useChats({ id: id, user: user })
 
-    const { status } = useUserStatus({ uid: props.user.uid })
-    const { contact, saveContact } = useContact({ contactId: props.user.uid, user: user })
+    const { status } = useUserStatus({ uid: props.user?.uid })
+    const { contact, saveContact } = useContact({ contactId: props.user?.uid, user: user })
 
     const [moreEl, setMoreEl] = useState<null | HTMLElement>(null)
     const [messageOptionsEl, setMessageOptionsEl] = useState<null | HTMLElement>(null)
@@ -112,20 +112,24 @@ const ChatItem = (props: { user: IChatItem }) => {
     }, [messages])
 
     const handleClickVideoCam = useCallback(() => {
-        window.open(`/video-call/${callId}/call/video/${props.user.uid}`, '_blank', '')
-    }, [callId, props.user.uid])
+        window.open(`/video-call/${callId}/call/video/${props.user?.uid}`, '_blank', '')
+    }, [callId, props.user?.uid])
 
     const handleClickCall = useCallback(() => {
-        window.open(`/video-call/${callId}/call/voice/${props.user.uid}`, '_blank', '')
-    }, [callId, props.user.uid])
+        window.open(`/video-call/${callId}/call/voice/${props.user?.uid}`, '_blank', '')
+    }, [callId, props.user?.uid])
 
     const handleOpenMore = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMoreEl(event.currentTarget)
     }
 
-    const handleOpenMessageOptionEl = (event: React.MouseEvent<HTMLButtonElement>, id: string) => {
-        setMessageOptionsEl(event.currentTarget)
-        setSelectedId(id)
+    const handleOpenMessageOptionEl = (event: React.MouseEvent<HTMLButtonElement>, id?: string) => {
+        if (id) {
+            setMessageOptionsEl(event.currentTarget)
+            setSelectedId(id)
+        } else {
+            throw new Error('id is required')
+        }
     }
 
     const handleDeleteMessage = () => {
@@ -141,15 +145,15 @@ const ChatItem = (props: { user: IChatItem }) => {
         if (contact) {
             return contact.displayName
         } else {
-            return props.user.uid
+            return props.user?.uid
         }
     }
 
     const handleAddContact = () => {
         saveContact({
             displayName: name,
-            phoneNumber: props.user.uid,
-            uid: props.user.uid,
+            phoneNumber: props?.user?.phoneNumber,
+            uid: props.user?.uid,
             email: props.user.email,
         }).then(() => {
             setOpenDialog(false)
@@ -188,7 +192,7 @@ const ChatItem = (props: { user: IChatItem }) => {
                         }}>
                         <Stack spacing={2} direction={'row'} sx={{ p: 1 }}>
                             <Avatar
-                                src={props.user?.photoURL}
+                                src={props.user?.photoURL ? props.user?.photoURL : ""}
                                 sx={{ width: 40, height: 40 }} />
                             <Stack spacing={0} direction={'column'}>
                                 <Typography variant={'body1'}>{
@@ -241,20 +245,20 @@ const ChatItem = (props: { user: IChatItem }) => {
                 <div ref={ref}></div>
                 {
                     messages.map((item, index) => {
-                        if (item.visibility[user.uid] === true) {
+                        if (item.visibility[user?.uid] === true) {
                             return (
                                 <Box
                                     key={index}
                                     sx={{
                                         display: 'flex',
                                         m: 1,
-                                        flexDirection: item.sender.uid === user.uid ? 'row-reverse' : 'row',
+                                        flexDirection: item.sender.uid === user?.uid ? 'row-reverse' : 'row',
                                     }}>
                                     <Stack spacing={2} direction={'row'} sx={{
                                         p: 1,
                                         boxShadow: 1,
-                                        background: item.sender.uid === user.uid ? '#1a237e' : '#fff',
-                                        borderRadius: item.sender.uid === user.uid ? '10px 10px 0 10px' : '10px 10px 10px 0',
+                                        background: item.sender.uid === user?.uid ? '#1a237e' : '#fff',
+                                        borderRadius: item.sender.uid === user?.uid ? '10px 10px 0 10px' : '10px 10px 10px 0',
                                     }}>
                                         <Stack spacing={0} direction={'column'}>
                                             <Stack
@@ -271,7 +275,7 @@ const ChatItem = (props: { user: IChatItem }) => {
                                                         <Typography
                                                             variant={'body1'}
                                                             sx={{
-                                                                color: item.sender.uid === user.uid ? '#fff' : '#000'
+                                                                color: item.sender.uid === user?.uid ? '#fff' : '#000'
                                                             }}>
                                                             {
                                                                 item.message.text
@@ -304,17 +308,17 @@ const ChatItem = (props: { user: IChatItem }) => {
                                                 <IconButton
                                                     size={'small'}
                                                     onClick={(event) => {
-                                                        handleOpenMessageOptionEl(event, item.id)
+                                                        handleOpenMessageOptionEl(event, item?.id)
                                                     }}
                                                     sx={{
-                                                        color: item.sender.uid === user.uid ? '#fff' : '#000'
+                                                        color: item.sender.uid === user?.uid ? '#fff' : '#000'
                                                     }}>
                                                     <ArrowDropDown />
                                                 </IconButton>
                                             </Stack>
                                             <Typography
                                                 sx={{
-                                                    color: item.sender.uid === user.uid ? '#fff' : '#000'
+                                                    color: item.sender.uid === user?.uid ? '#fff' : '#000'
                                                 }}
                                                 variant={'body2'}>{
                                                     moment(item.message.createdAt).locale('id').fromNow()
@@ -430,7 +434,7 @@ const ChatItem = (props: { user: IChatItem }) => {
                             contact={{
                                 displayName: props?.user?.displayName,
                                 phoneNumber: props?.user?.phoneNumber,
-                                uid: props.user.uid
+                                uid: props.user?.uid
                             }}
                             onClick={(transactions?: TransactionObject) => {
                                 if (transactions) {

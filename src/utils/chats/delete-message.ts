@@ -4,17 +4,21 @@ import { db } from "utils/firebase";
 
 const deleteMessage = async (props: {
     id: string,
-    messageId: string,
+    messageId: string | null,
     user: IUser,
     receiver: IChatItem,
 }): Promise<void> => {
-    const docRef = doc(db, 'chats', props.id, 'messages', props.messageId)
-    return updateDoc(docRef, {
-        visibility: {
-            [props.user.uid]: false,
-            [props.receiver.uid]: await getDoc(docRef).then((doc) => doc.data().visibility[props.receiver.uid])
-        }
-    })
+    if (props?.messageId) {
+        const docRef = doc(db, 'chats', props.id, 'messages', props.messageId)
+        return updateDoc(docRef, {
+            visibility: {
+                [props.user.uid]: false,
+                [props.receiver.uid]: await getDoc(docRef).then((doc) => doc.data()?.visibility[props.receiver.uid])
+            }
+        })
+    } else {
+        throw new Error('Message ID is required')
+    }
 }
 
 const deleteMessages = async (props: {
@@ -26,7 +30,7 @@ const deleteMessages = async (props: {
     return updateDoc(docRef, {
         visibility: {
             [props.user.uid]: false,
-            [props.receiver.uid]: await getDoc(docRef).then((doc) => doc.data().visibility[props.receiver.uid])
+            [props.receiver.uid]: await getDoc(docRef).then((doc) => doc.data()?.visibility[props.receiver.uid])
         }
     })
 }

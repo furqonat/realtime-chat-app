@@ -25,7 +25,7 @@ const Chat = () => {
     const [openModal, setOpenModal] = useState(false)
     const [query, setQuery] = useState('')
     const [error, setError] = useState(false)
-    const [users, setUsers] = useState(null)
+    const [users, setUsers] = useState<IChatItem | null>(null)
 
     const { user } = useFirebases()
     

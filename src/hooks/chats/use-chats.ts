@@ -5,28 +5,30 @@ import { db } from "utils";
 import newChatSound from "assets/sounds/new-chats.wav";
 
 
-const useChats = (props: { id?: string, user: IUser }) => {
+const useChats = (props: { id?: string, user: IUser | null }) => {
 
     const [chatList, setChatList] = useState<IChatList[]>([])
     const [messages, setMessages] = useState<IChatMessage[]>([])
 
     useEffect(() => {
-
-        const col = collection(db, 'chats')
-        const chatSubscribe =
-            onSnapshot(col, (snapshot) => {
-                const values: any = []
-                snapshot.forEach((doc) => {
-                    const data = doc.data()
-                    if (data.users.includes(props.user.uid) && data.visibility && data.visibility[props.user.uid]) {
-                        values.push(data)
-                    }
-                    setChatList(values
-                        .sort((a: any, b: any) => new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()))
+        if (!props.user) return
+        else {
+            const col = collection(db, 'chats')
+            const chatSubscribe =
+                onSnapshot(col, (snapshot) => {
+                    const values: any = []
+                    snapshot.forEach((doc) => {
+                        const data = doc.data()
+                        if (data.users.includes(props.user?.uid) && data.visibility && data.visibility[props.user?.uid ? props.user.uid : ""]) {
+                            values.push(data)
+                        }
+                        setChatList(values
+                            .sort((a: any, b: any) => new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()))
+                    })
                 })
-            })
-        return () =>
-            chatSubscribe()
+            return () =>
+                chatSubscribe()
+        }
     }, [props.user?.uid])
 
     useEffect(() => {
@@ -38,7 +40,7 @@ const useChats = (props: { id?: string, user: IUser }) => {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === "added") {
                             // play sound when new message is added and user is not in chat screen 
-                            if (document.visibilityState !== "visible" && props.user.uid !== change.doc.data().sender.uid) {
+                            if (document.visibilityState !== "visible" && props.user?.uid !== change.doc.data().sender.uid) {
                                 const audio = new Audio(newChatSound)
                                 audio.play()
                             }

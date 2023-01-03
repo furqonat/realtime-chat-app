@@ -1,13 +1,14 @@
-import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
-import "moment/locale/id";
-import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages';
-import { useEffect, useState } from "react";
-import { Route, Routes } from 'react-router-dom';
-import { db, useFirebases } from "utils";
-import { RoutePath } from './components/utils';
-import './index.css';
+import { collection, doc, getDocs, updateDoc } from "firebase/firestore"
+import "moment/locale/id"
+import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages'
+import { useEffect, useState } from "react"
+import { Route, Routes } from 'react-router-dom'
+import { db, useFirebases } from "utils"
+import { RoutePath } from './components/utils'
+import './index.css'
+import { IUser } from "interfaces"
 
-const initBeforeUnload = (user) => {
+const initBeforeUnload = (user: IUser) => {
     window.onbeforeunload = (_event: BeforeUnloadEvent) => {
         const collectionRef = collection(db, 'users')
         getDocs(collectionRef).then((snapshot) => {
