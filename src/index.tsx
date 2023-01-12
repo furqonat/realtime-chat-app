@@ -36,7 +36,7 @@ app.render(
         <FirebaseProvider>
             <ThemeProvider theme={theme}>
                 <CssBaseline>
-                    <App />
+                    <App/>
                 </CssBaseline>
             </ThemeProvider>
         </FirebaseProvider>

@@ -11,15 +11,15 @@ const useChats = (props: { id?: string, user: IUser | null }) => {
     const [messages, setMessages] = useState<IChatMessage[]>([])
 
     useEffect(() => {
-        if (!props.user) return
-        else {
+
+        if (props.user?.uid) {
             const col = collection(db, 'chats')
             const chatSubscribe =
                 onSnapshot(col, (snapshot) => {
                     const values: any = []
                     snapshot.forEach((doc) => {
                         const data = doc.data()
-                        if (data.users.includes(props.user?.uid) && data.visibility && data.visibility[props.user?.uid ? props.user.uid : ""]) {
+                        if (data.users.includes(props.user.uid) && data.visibility && data.visibility[props.user.uid]) {
                             values.push(data)
                         }
                         setChatList(values
@@ -28,6 +28,8 @@ const useChats = (props: { id?: string, user: IUser | null }) => {
                 })
             return () =>
                 chatSubscribe()
+        } else {
+            return () => {}
         }
     }, [props.user?.uid])
 

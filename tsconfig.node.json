@@ -18,17 +18,17 @@
             "hooks/*": [
                 "./src/hooks/*"
             ],
-            "pages/*": [
-                "./src/pages/*"
-            ],
-            "utils/*": [
-                "./src/utils/*"
-            ],
             "interfaces/*": [
                 "./src/interfaces/*"
             ],
             "lib/*": [
                 "./src/lib/*"
+            ],
+            "pages/*": [
+                "./src/pages/*"
+            ],
+            "utils/*": [
+                "./src/utils/*"
             ],
         },
     },

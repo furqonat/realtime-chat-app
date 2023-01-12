@@ -1,12 +1,15 @@
 import {
     Call,
     CallEndOutlined,
-    CallOutlined, ForumOutlined, PersonOutline, ReceiptLongOutlined
+    CallOutlined,
+    ForumOutlined,
+    PersonOutline,
+    ReceiptLongOutlined
 } from "@mui/icons-material"
 import { Avatar, Box, Drawer, IconButton, Stack, Tab, Tabs, Typography } from "@mui/material"
 import { doc, updateDoc } from "firebase/firestore"
 import { useVideoCall } from "hooks"
-import { useState } from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { db, useFirebases } from "utils"
 import { Calls } from "./calls"
@@ -24,13 +27,13 @@ interface TabPanelProps {
 // TODO: move the drawer call in app.tsx if nessesary, and add new story on new contract
 
 const TabPanel = (props: TabPanelProps) => {
-    const { children, value, index, style, ...other } = props;
+    const {children, value, index, style, ...other} = props;
     const navigate = useNavigate()
     const [drawerCall, setDrawerCall] = useState(true)
 
-    const { user } = useFirebases()
+    const {user} = useFirebases()
 
-    const { call } = useVideoCall({ user })
+    const {call} = useVideoCall({user})
 
     const handleOnCallReject = () => {
         const dbRef = doc(db, 'calls', call.callId)
@@ -55,7 +58,7 @@ const TabPanel = (props: TabPanelProps) => {
             {...other}
         >
             {value === index && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
                     {children}
                 </Box>
             )}
@@ -74,20 +77,20 @@ const TabPanel = (props: TabPanelProps) => {
                             }}
                             spacing={2}>
                             <Avatar
-                                sx={{ width: 100, height: 100, mx: 'auto' }}
-                                src={call?.photoURL} />
+                                sx={{width: 100, height: 100, mx: 'auto'}}
+                                src={call?.photoURL}/>
                             <Typography variant={'h5'}>{call?.displayName}</Typography>
                             <Typography variant={'body1'}>{call?.phoneNumber}</Typography>
-                            <Stack direction={'row'} spacing={2} sx={{ mx: 'auto' }}>
+                            <Stack direction={'row'} spacing={2} sx={{mx: 'auto'}}>
                                 <IconButton
                                     onClick={handleOnCallReject}>
                                     <CallEndOutlined
-                                        color={'error'} />
+                                        color={'error'}/>
                                 </IconButton>
                                 <IconButton
                                     onClick={handleOnCallAccept}>
                                     <Call
-                                        color={'info'} />
+                                        color={'info'}/>
                                 </IconButton>
                             </Stack>
                         </Stack>
@@ -99,7 +102,6 @@ const TabPanel = (props: TabPanelProps) => {
 }
 
 
-
 const Layout = () => {
     const [value, setValue] = useState('1')
 
@@ -109,7 +111,7 @@ const Layout = () => {
             {
             }
             <Box
-                style={{ display: 'flex', flexDirection: 'row' }}>
+                style={{display: 'flex', flexDirection: 'row'}}>
                 <Box sx={{
                     display: 'flex', minHeight: '100vh', alignItems: 'center', borderRight: 1, borderColor: 'divider',
                 }}>
@@ -124,41 +126,41 @@ const Layout = () => {
                         orientation={'vertical'}>
                         <Tab
                             value={'1'}
-                            style={{ margin: '15px 0' }}
-                            icon={<ForumOutlined />}
+                            style={{margin: '15px 0'}}
+                            icon={<ForumOutlined/>}
                             aria-controls={'vertical-tabpanel-1'}
-                            aria-label={'chats'} />
+                            aria-label={'chats'}/>
                         <Tab
                             value={'2'}
-                            style={{ margin: '15px 0' }}
-                            icon={<ReceiptLongOutlined />}
+                            style={{margin: '15px 0'}}
+                            icon={<ReceiptLongOutlined/>}
                             aria-controls={'vertical-tabpanel-1'}
-                            aria-label={'transactions'} />
+                            aria-label={'transactions'}/>
                         <Tab
                             value={'3'}
-                            style={{ margin: '15px 0' }}
-                            icon={<CallOutlined />}
+                            style={{margin: '15px 0'}}
+                            icon={<CallOutlined/>}
                             aria-controls={'vertical-tabpanel-1'}
-                            aria-label={'calls'} />
+                            aria-label={'calls'}/>
                         <Tab
                             value={'4'}
-                            style={{ margin: '15px 0' }}
-                            icon={<PersonOutline />}
+                            style={{margin: '15px 0'}}
+                            icon={<PersonOutline/>}
                             aria-controls={'vertical-tabpanel-1'}
-                            aria-label={'stories'} />
+                            aria-label={'stories'}/>
                     </Tabs>
                 </Box>
-                <TabPanel value={1} index={parseInt(value)} style={{ width: '100%' }}>
-                    <Chat />
+                <TabPanel value={1} index={parseInt(value)} style={{width: '100%'}}>
+                    <Chat/>
                 </TabPanel>
-                <TabPanel value={2} index={parseInt(value)} style={{ width: '100%' }}>
-                    <Transaction />
+                <TabPanel value={2} index={parseInt(value)} style={{width: '100%'}}>
+                    <Transaction/>
                 </TabPanel>
-                <TabPanel value={3} index={parseInt(value)} style={{ width: '100%' }}>
-                    <Calls />
+                <TabPanel value={3} index={parseInt(value)} style={{width: '100%'}}>
+                    <Calls/>
                 </TabPanel>
-                <TabPanel value={4} index={parseInt(value)} style={{ width: '100%' }}>
-                    <Person />
+                <TabPanel value={4} index={parseInt(value)} style={{width: '100%'}}>
+                    <Person/>
                 </TabPanel>
             </Box>
         </Stack>
@@ -169,7 +171,7 @@ const Layout = () => {
 
 export { VideoCall } from './calls'
 export { SignIn, Verification } from './signin'
-export { Layout }
+export { Layout as EntryPoint }
 export { Verification as VerificationID } from './verification'
 export { About } from './about'
 export { Privacy } from './privacy'

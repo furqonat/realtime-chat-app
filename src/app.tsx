@@ -1,25 +1,19 @@
-import { collection, doc, getDocs, updateDoc } from "firebase/firestore"
-import "moment/locale/id"
-import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages'
-import { useEffect, useState } from "react"
-import { Route, Routes } from 'react-router-dom'
-import { db, useFirebases } from "utils"
-import { RoutePath } from './components/utils'
-import './index.css'
-import { IUser } from "interfaces"
+import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
+import "moment/locale/id";
+import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages';
+import { useEffect, useState } from "react";
+import { Route, Routes } from 'react-router-dom';
+import { db, useFirebases } from "utils";
+import { RoutePath } from './components';
+import './index.css';
+import { IUser } from "interfaces";
 
 const initBeforeUnload = (user: IUser) => {
     window.onbeforeunload = (_event: BeforeUnloadEvent) => {
-        const collectionRef = collection(db, 'users')
-        getDocs(collectionRef).then((snapshot) => {
-            snapshot.forEach((doc) => {
-                if (doc.exists() && doc.data().uid === user.uid) {
-                    updateDoc(doc.ref, {
-                        status: new Date().toISOString()
-                    })
-                }
-            })
-        })
+        const dbRef = doc(db, 'users', user.phoneNumber)
+        updateDoc(dbRef, {
+            status: new Date().toISOString()
+        }).then(r => {})
     }
 }
 

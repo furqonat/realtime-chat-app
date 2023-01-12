@@ -7,7 +7,7 @@ import {
     signInWithCustomToken, signInWithPhoneNumber,
     signOut, User
 } from "firebase/auth"
-import { doc, getDoc, getFirestore, onSnapshot, setDoc, updateDoc } from "firebase/firestore"
+import { collection, doc, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { IUser } from "interfaces"
 import {
     createContext, ReactNode, useContext, useEffect, useState
@@ -52,26 +52,25 @@ const useFirebase = () => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                const docRef = doc(db, "users", user?.uid)
-                onSnapshot(docRef, (doc) => {
-                    const data = doc.data()
-                    if (data) {
-                        const userDoc = {
-                            uid: data.uid,
-                            displayName: data.displayName,
-                            photoURL: data.photoURL,
-                            phoneNumber: data.phoneNumber,
-                            isIDCardVerified: data.isIDCardVerified,
-                            email: data.email,
-                        }
+                const colRef = collection(db, "users")
+                const users = query(colRef, where("phoneNumber", "==", user?.phoneNumber))
+                onSnapshot(users, (snapshot) => {
+                    snapshot.forEach((doc) => {
                         if (doc.exists()) {
+                            const data = doc.data()
+                            const userDoc = {
+                                uid: data.uid,
+                                displayName: data.displayName,
+                                photoURL: data.photoURL,
+                                phoneNumber: data.phoneNumber,
+                                isIDCardVerified: data.isIDCardVerified,
+                                email: data.email,
+                            }
                             setUser(formatUser(userDoc))
                         } else {
                             setUser(null)
                         }
-                    } else {
-                        setUser(null)
-                    }
+                    })
                 })
                 if (
                     matchPath(RoutePath.VERIFICATION, router.pathname) ||

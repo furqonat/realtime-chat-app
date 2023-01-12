@@ -1,8 +1,15 @@
 import { MoreVertOutlined, NotificationsOutlined, SearchOutlined } from '@mui/icons-material'
 import {
-    Box, Grid, IconButton, InputAdornment,
+    Box,
+    Grid,
+    IconButton,
+    InputAdornment,
     MenuItem,
-    Modal, OutlinedInput, Popover, Stack, Typography
+    Modal,
+    OutlinedInput,
+    Popover,
+    Stack,
+    Typography
 } from '@mui/material'
 import { doc, getDoc } from 'firebase/firestore'
 import { useChats } from 'hooks'
@@ -14,12 +21,11 @@ import { ChatItem } from "./chat-item"
 import { ChatList } from './chat-list'
 
 
-
 const Chat = () => {
-    
-    
+
+
     const navigate = useNavigate()
-    const { logout } = useFirebases()
+    const {logout} = useFirebases()
     const [anchorMore, setAnchorMore] = useState<null | HTMLButtonElement>(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [openModal, setOpenModal] = useState(false)
@@ -27,9 +33,10 @@ const Chat = () => {
     const [error, setError] = useState(false)
     const [users, setUsers] = useState<IChatItem | null>(null)
 
-    const { user } = useFirebases()
-    
-    const { chatList } = useChats({ user: user })
+    const {user} = useFirebases()
+
+
+    const {chatList} = useChats({user: user})
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(event.target.value)
@@ -72,7 +79,7 @@ const Chat = () => {
             }
         })
     }
-    
+
 
     return (
         <Grid wrap='nowrap' container={true}>
@@ -110,7 +117,7 @@ const Chat = () => {
                                             onClick={() => handleOpenModal()}>
                                             <Typography
                                                 variant={'body2'}
-                                                sx={{ cursor: 'pointer' }}>
+                                                sx={{cursor: 'pointer'}}>
                                                 Chat Baru
                                             </Typography>
                                         </MenuItem>
@@ -118,7 +125,7 @@ const Chat = () => {
                                             <Typography
                                                 variant={'body2'}
                                                 onClick={() => handleSignOut()}
-                                                sx={{ cursor: 'pointer' }}>
+                                                sx={{cursor: 'pointer'}}>
                                                 Keluar
                                             </Typography>
                                         </MenuItem>
@@ -134,15 +141,15 @@ const Chat = () => {
                             <Stack
                                 spacing={2}
                                 sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                width: 400,
-                                bgcolor: 'background.paper',
-                                p: 4,
-                                borderRadius: 2
-                            }}>
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    width: 400,
+                                    bgcolor: 'background.paper',
+                                    p: 4,
+                                    borderRadius: 2
+                                }}>
                                 <Typography id={"modal-modal-title"} variant="h6" component="h2">
                                     Cari Nomor Telepon
                                 </Typography>
@@ -156,7 +163,7 @@ const Chat = () => {
                                     onChange={handleSearch}
                                     onKeyDown={handleEnter}
                                     placeholder={'Cari Nomor Telepon'}
-                                    sx={{ borderRadius: 10 }} />
+                                    sx={{borderRadius: 10}}/>
                             </Stack>
                         </Modal>
                         <OutlinedInput
@@ -177,7 +184,7 @@ const Chat = () => {
             </Grid>
             <Grid item={true} xs={12}>
                 {
-                    users !== undefined && <ChatItem user={users}/>
+                    users && <ChatItem user={users}/>
                 }
             </Grid>
         </Grid>

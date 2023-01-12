@@ -14,7 +14,7 @@ const SignIn: React.FC = () => {
 
   // useEffect(() => {
 
-  //   const hash = encrypt(`${process.env.REACT_APP_SALT}`)
+  //   const hash = encrypt(`${import.meta.env.VITE_APP_SALT}`)
   //   const data = JSON.stringify({
   //     phoneNumber: "+12345678911",
   //     verificationId: verificationId,
@@ -88,7 +88,7 @@ const SignIn: React.FC = () => {
                   variant="body1" component="div">
                   Belum punya aplikasi Rekberin?
                 </Typography>
-                <a href="#download">
+                <a href="pages/signin/signin#download">
                   <img
                     width={140}
                     height={50}
