@@ -13,7 +13,7 @@ const Verification = () => {
         confirmationResult?.confirm(code).then(
             async result => {
                 if (result.user) {
-                    const docRef = doc(db, 'users', result.user.phoneNumber)
+                    const docRef = doc(db, 'users', result.user.uid)
                     const docSnap = await getDoc(docRef)
                     if (docSnap.exists()) {
                         updateDoc(docRef, {
@@ -22,7 +22,7 @@ const Verification = () => {
                             navigate('/chats')
                         })
                     } else {
-                        setDoc(doc(db, 'users', result.user.phoneNumber), {
+                        setDoc(doc(db, 'users', result.user.uid), {
                             phoneNumber: result.user.phoneNumber,
                             uid: result.user.uid,
                             displayName: result.user.displayName,

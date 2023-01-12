@@ -1,4 +1,6 @@
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material"
+window.global ||= window
+
+import { CssBaseline, ThemeProvider, createTheme } from "@mui/material"
 import ReactDOM from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
 import App from "./app"

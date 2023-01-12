@@ -8,7 +8,7 @@ const useContact = (props: { contactId?: string, user: IUser }) => {
 
     useEffect(() => {
         if (props?.contactId) {
-            const docRef = doc(db, 'users', props.user.phoneNumber, 'contacts', props.contactId)
+            const docRef = doc(db, 'users', props.user.uid, 'contacts', props.contactId)
             const unsubscribe = onSnapshot(docRef, (snapshot) => {
                 if (snapshot.exists()) {
                     setContact(snapshot.data() as IContact)
@@ -22,7 +22,7 @@ const useContact = (props: { contactId?: string, user: IUser }) => {
     }, [props?.contactId, props.user])
 
     const saveContact = async ( contact: IContact ) => {
-        const docRef = doc(db, 'users', props.user.phoneNumber, 'contacts', contact.uid)
+        const docRef = doc(db, 'users', props.user.uid, 'contacts', contact.uid)
         return setDoc(docRef, contact, { merge: true })
     }
 
@@ -37,7 +37,7 @@ const useContacts = (props: { user: IUser }) => {
     const [contacts, setContacts] = useState<IContact[]>([])
 
     useEffect(() => {
-        const collectionRef = collection(db, 'users', props.user.phoneNumber, 'contacts')
+        const collectionRef = collection(db, 'users', props.user.uid, 'contacts')
         const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
             const contactList: IContact[] = []
             snapshot.forEach((doc) => {
@@ -46,7 +46,7 @@ const useContacts = (props: { user: IUser }) => {
             setContacts(contactList)
         })
         return () => unsubscribe()
-    }, [props.user.phoneNumber])
+    }, [props.user.uid])
 
     return {
         contacts

@@ -11,7 +11,7 @@ const Person = () => {
 
     const { user } = useFirebases()
     const { verification } = useVerification({
-        phoneNumber: user?.phoneNumber
+        uid: user?.uid
     })
 
     const [name, setName] = useState(user?.displayName ?? '')
@@ -34,8 +34,8 @@ const Person = () => {
             setProgress(0)
             setDialog(true)
             const storage = getStorage()
-            const docRef = doc(db, 'users', `${user.phoneNumber}`)
-            const storageRef = ref(storage, `${user.phoneNumber}/avatar/${file.name}`)
+            const docRef = doc(db, 'users', `${user.uid}`)
+            const storageRef = ref(storage, `${user.uid}/avatar/${file.name}`)
             const task = uploadBytesResumable(storageRef, file)
             task.on('state_changed', (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100

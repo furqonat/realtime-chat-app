@@ -5,7 +5,7 @@ import { db } from "utils";
 import newChatSound from "assets/sounds/new-chats.wav";
 
 
-const useChats = (props: { id?: string, user: IUser }) => {
+const useChats = (props: { id?: string, user: IUser | null }) => {
 
     const [chatList, setChatList] = useState<IChatList[]>([])
     const [messages, setMessages] = useState<IChatMessage[]>([])
@@ -42,7 +42,7 @@ const useChats = (props: { id?: string, user: IUser }) => {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === "added") {
                             // play sound when new message is added and user is not in chat screen 
-                            if (document.visibilityState !== "visible" && props.user.uid !== change.doc.data().sender.uid) {
+                            if (document.visibilityState !== "visible" && props.user?.uid !== change.doc.data().sender.uid) {
                                 const audio = new Audio(newChatSound)
                                 audio.play()
                             }

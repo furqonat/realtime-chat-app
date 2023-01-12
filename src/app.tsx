@@ -1,4 +1,4 @@
-import { doc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
 import "moment/locale/id";
 import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages';
 import { useEffect, useState } from "react";
@@ -6,8 +6,9 @@ import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
 import { RoutePath } from './components';
 import './index.css';
+import { IUser } from "interfaces";
 
-const initBeforeUnload = (user) => {
+const initBeforeUnload = (user: IUser) => {
     window.onbeforeunload = (_event: BeforeUnloadEvent) => {
         const dbRef = doc(db, 'users', user.phoneNumber)
         updateDoc(dbRef, {
@@ -31,19 +32,31 @@ const App = () => {
     }, [user])
 
     useEffect(() => {
-        if (user?.phoneNumber) {
-            const dbRef = doc(db, 'users', user.phoneNumber)
-            updateDoc(dbRef, {
-                status: online ? 'online' : new Date().toISOString()
+        if (user?.uid) {
+            const collectionRef = collection(db, 'users')
+            getDocs(collectionRef).then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    if (doc.exists() && doc.data().uid === user.uid) {
+                        updateDoc(doc.ref, {
+                            status: online ? 'online' : new Date().toISOString()
+                        })
+                    }
+                })
             })
             return () => {
-                updateDoc(dbRef, {
-                    status: new Date().toISOString()
+                getDocs(collectionRef).then((snapshot) => {
+                    snapshot.forEach((doc) => {
+                        if (doc.exists() && doc.data().uid === user.uid) {
+                            updateDoc(doc.ref, {
+                                status: new Date().toISOString()
+                            })
+                        }
+                    })
                 })
             }
         }
         return () => { }
-    }, [user?.phoneNumber, online])
+    }, [user?.uid, online])
 
     useEffect(() => {
         const handler = () => setOnline(document.visibilityState === 'visible')

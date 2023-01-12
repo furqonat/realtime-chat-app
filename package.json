@@ -4,8 +4,8 @@
   "description": "Front end rekber indo",
   "author": "Furqon Romdhani",
   "license": "private",
-  "type": "module",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",

@@ -5,7 +5,7 @@ import moment from "moment"
 
 const ContactList = (props: { contact: IContact, onClick?: (contact: IContact) => void }) => {
 
-    const { status } = useUserStatus({ phoneNumber: props?.contact.phoneNumber })
+    const { status } = useUserStatus({ uid: props?.contact.phoneNumber })
 
     return (
         <Card

@@ -44,7 +44,7 @@ const formatUser = (user: IUser) => {
 const useFirebase = () => {
     const router = useLocation()
     const navigate = useNavigate()
-    const [user, setUser] = useState<IUser>(null)
+    const [user, setUser] = useState<IUser | null>(null)
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
     const [verificationCode, setVerificationCode] = useState(0)
     const [phone, setPhone] = useState('')
@@ -74,7 +74,7 @@ const useFirebase = () => {
                 })
                 if (
                     matchPath(RoutePath.VERIFICATION, router.pathname) ||
-                    matchPath(RoutePath.VIDEO_CALL, router.pathname) || 
+                    matchPath(RoutePath.VIDEO_CALL, router.pathname) ||
                     matchPath(RoutePath.ABOUT, router.pathname) ||
                     matchPath(RoutePath.PRIVACY, router.pathname)
                 ) {
@@ -93,7 +93,7 @@ const useFirebase = () => {
 
     const assignUser = async (user: User, nextPage?: string) => {
         const dbRef = getFirestore(app)
-        const docRef = doc(dbRef, 'users', `${user.phoneNumber}`)
+        const docRef = doc(dbRef, 'users', `${user.uid}`)
         const data = await getDoc(docRef)
         if (data.exists()) {
             updateDoc(docRef, {
@@ -102,7 +102,7 @@ const useFirebase = () => {
                 nextPage && navigate(nextPage)
             })
         } else {
-            setDoc(doc(dbRef, 'users', user.phoneNumber), {
+            setDoc(doc(dbRef, 'users', user.uid), {
                 phoneNumber: user.phoneNumber,
                 uid: user.uid,
                 displayName: user.displayName,
@@ -215,12 +215,14 @@ const useFirebase = () => {
     }
 
     const logout = async () => {
-        const dbRef = doc(db, 'users', user.phoneNumber)
-        return updateDoc(dbRef, {
-            status: new Date().toISOString()
-        }).then(() => {
-            signOut(auth)
-        })
+        if (user) {
+            const dbRef = doc(db, 'users', user.uid)
+            return updateDoc(dbRef, {
+                status: new Date().toISOString()
+            }).then(() => {
+                signOut(auth)
+            })
+        }
     }
 
     return {
@@ -238,7 +240,7 @@ const firebaseContext = createContext({
     confirmationResult: null as ConfirmationResult | null,
     signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { },
     logout: async () => { },
-    user: null as IUser,
+    user: null as IUser | null | IUser ,
     signInWithWhatsApp: async (_phoneNumber: string) => { },
     verifyCode: async (_code: string, _provider: "phone" | "whatsapp", _nextPage?: string) => { },
     signIn: async (_token: string) => { }

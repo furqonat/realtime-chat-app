@@ -38,7 +38,7 @@ const Item = (props: { chat: IChatList, onClick: (event: string) => void, active
         user: user, contactId: props.chat.receiver.uid === user?.uid ? props.chat.owner : props.chat.receiver.uid
     })
     const { userInfo } = useUserInfo({
-        phoneNumber: props.chat?.owner === user?.uid ? props.chat?.receiver.phoneNumber : props.chat?.ownerPhoneNumber
+        uid: props.chat?.owner === user?.uid ? props.chat?.receiver.uid : props.chat?.owner
     })
     const getOwnerDisplayNameOrPhoneNumber = () => {
         if (contact) {

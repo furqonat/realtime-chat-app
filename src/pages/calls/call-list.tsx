@@ -110,14 +110,14 @@ const Item: React.FC<{
     const { user } = useFirebases()
     const { contact } = useContact({ user: user, contactId: user.uid === call.caller.uid ? call.receiver.uid : call.caller.uid })
     const { userInfo } = useUserInfo({
-        phoneNumber: user.uid === call.caller.uid ? call.receiver.phoneNumber : call.caller.phoneNumber
+        uid: user.uid === call.caller.uid ? call.receiver.uid : call.caller.uid
     })
 
     const getOwnerDisplayNameOrPhoneNumber = () => {
         if (contact) {
             return contact.displayName
         } else {
-            if (call.phoneNumber === user.phoneNumber) {
+            if (call.caller.uid === user.uid) {
                 return call.receiver.phoneNumber
             }
             return call.phoneNumber
@@ -128,13 +128,13 @@ const Item: React.FC<{
     const getCallIcon = () => {
         switch (call.status) {
             case CallState.UNANSWERED:
-                if (call.phoneNumber !== user.phoneNumber) {
+                if (call.caller.uid !== user.uid) {
                     return <CallMissedOutlined fontSize={'small'} />
                 } else {
                     return <CallMissedOutgoingOutlined fontSize={'small'} />
                 }
             default:
-                if (call.phoneNumber !== user.phoneNumber) {
+                if (call.caller.uid !== user.uid) {
                     return <CallReceived fontSize={'small'} />
                 } else {
                     return <CallMadeOutlined fontSize={'small'} />

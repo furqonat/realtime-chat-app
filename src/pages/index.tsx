@@ -45,7 +45,7 @@ const TabPanel = (props: TabPanelProps) => {
     }
 
     const handleOnCallAccept = () => {
-        navigate(`/video-call/${call.callId}/answer/${call.callType}/${user?.phoneNumber}`)
+        navigate(`/video-call/${call.callId}/answer/${call.callType}/${user?.uid}`)
     }
 
     return (

@@ -3,17 +3,17 @@ import { useEffect, useState } from "react";
 import { db } from "utils";
 
 
-const useUserStatus = (props: {phoneNumber: string}) => {
+const useUserStatus = (props: {uid: string}) => {
 
     const [status, setStatus] = useState("")
 
     useEffect(() => {
-        const dbRef = doc(db, "users", props.phoneNumber)
+        const dbRef = doc(db, "users", props.uid)
         const unsubscribe = onSnapshot(dbRef, (doc) => {
             setStatus(doc.data()?.status)
         })
         return unsubscribe
-    }, [props.phoneNumber])
+    }, [props.uid])
 
     return {
         status
