@@ -12,21 +12,25 @@ const useChats = (props: { id?: string, user: IUser }) => {
 
     useEffect(() => {
 
-        const col = collection(db, 'chats')
-        const chatSubscribe =
-            onSnapshot(col, (snapshot) => {
-                const values: any = []
-                snapshot.forEach((doc) => {
-                    const data = doc.data()
-                    if (data.users.includes(props.user.uid) && data.visibility && data.visibility[props.user.uid]) {
-                        values.push(data)
-                    }
-                    setChatList(values
-                        .sort((a: any, b: any) => new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()))
+        if (props.user?.uid) {
+            const col = collection(db, 'chats')
+            const chatSubscribe =
+                onSnapshot(col, (snapshot) => {
+                    const values: any = []
+                    snapshot.forEach((doc) => {
+                        const data = doc.data()
+                        if (data.users.includes(props.user.uid) && data.visibility && data.visibility[props.user.uid]) {
+                            values.push(data)
+                        }
+                        setChatList(values
+                            .sort((a: any, b: any) => new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()))
+                    })
                 })
-            })
-        return () =>
-            chatSubscribe()
+            return () =>
+                chatSubscribe()
+        } else {
+            return () => {}
+        }
     }, [props.user?.uid])
 
     useEffect(() => {

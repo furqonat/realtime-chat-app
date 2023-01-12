@@ -4,6 +4,7 @@
   "description": "Front end rekber indo",
   "author": "Furqon Romdhani",
   "license": "private",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.4",
@@ -11,11 +12,6 @@
     "@mui/icons-material": "^5.10.6",
     "@mui/lab": "^5.0.0-alpha.107",
     "@mui/material": "^5.10.13",
-    "@reduxjs/toolkit": "^1.8.5",
-    "@types/react": "^18.0.20",
-    "@types/react-dom": "^18.0.6",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/wavesurfer.js": "^6.0.3",
     "axios": "^1.1.2",
     "emoji-picker-react": "^3.6.5",
     "firebase": "^9.10.0",
@@ -23,22 +19,23 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.8",
-    "react-redux": "^8.0.4",
     "react-router-dom": "^6.4.1",
-    "react-scripts": "^5.0.1",
-    "react-toastify": "^9.0.8",
-    "socket.io-client": "^4.5.3",
-    "typescript": "^4.8.3",
-    "webrtc-adapter": "^8.2.0"
+    "react-toastify": "^9.0.8"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "devDependencies": {
-    "buffer": "^6.0.3"
+    "@vitejs/plugin-react-swc": "^3.0.1",
+    "typescript": "^4.8.3",
+    "buffer": "^6.0.3",
+    "vite": "^4.0.4",
+    "@types/react": "^18.0.20",
+    "@types/react-dom": "^18.0.6",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/wavesurfer.js": "^6.0.3"
   },
   "eslintConfig": {
     "extends": [

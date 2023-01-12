@@ -5,8 +5,6 @@ import { useUserInfo } from "hooks"
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { CallState, db, useFirebases } from "utils"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import adapter from 'webrtc-adapter';
 
 const server = {
     iceServers: [

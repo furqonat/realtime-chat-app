@@ -58,7 +58,7 @@ const Contacts: React.FC<IContactsProps> = (props) => {
         const id = transaction.receiverInfo.uid + user?.uid + new Date().getTime()
         const orderId = `order-${new Date().getTime()}`
         const dbRef = doc(db, 'transactions', orderId)
-        axios.post(`${process.env.REACT_APP_SERVER_URL}/transactions/new`, {
+        axios.post(`${import.meta.env.VITE_APP_SERVER_URL}/transactions/new`, {
             customer_details: {
                 first_name: transaction.receiverInfo.displayName,
                 phone: transaction.receiverInfo.phoneNumber,

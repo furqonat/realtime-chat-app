@@ -244,7 +244,8 @@ const ChatInput: FC<IChatInputProps> = (props) => {
                     <img
                         width={300}
                         height={300}
-                        src={base64Image} alt="" />
+                        src={base64Image}
+                        alt="" />
                     <Box
                         sx={{
                             display: 'flex',

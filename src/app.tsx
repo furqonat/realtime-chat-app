@@ -4,7 +4,7 @@ import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, Video
 import { useEffect, useState } from "react";
 import { Route, Routes } from 'react-router-dom';
 import { db, useFirebases } from "utils";
-import { RoutePath } from './components/utils';
+import { RoutePath } from './components';
 import './index.css';
 
 const initBeforeUnload = (user) => {
@@ -12,7 +12,7 @@ const initBeforeUnload = (user) => {
         const dbRef = doc(db, 'users', user.phoneNumber)
         updateDoc(dbRef, {
             status: new Date().toISOString()
-        })
+        }).then(r => {})
     }
 }
 
