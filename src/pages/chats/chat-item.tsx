@@ -24,9 +24,8 @@ const ChatItem = (props: { user: IChatItem | null }) => {
     const ref = useRef<HTMLDivElement>(null)
     const { user } = useFirebases()
 
-    const id = user?.uid > props.user?.uid ? user?.uid + props.user?.uid : props.user?.uid + user?.uid
-    const callId = id + new Date().getTime()
-    const { messages } = useChats({ id: id, user: user })
+    const callId = props.user.chatId + new Date().getTime()
+    const { messages } = useChats({ id: props.user.chatId, user: user })
 
     const { status } = useUserStatus({ uid: props.user?.uid })
     const { contact, saveContact } = useContact({ contactId: props.user?.uid, user: user })
@@ -134,7 +133,7 @@ const ChatItem = (props: { user: IChatItem | null }) => {
 
     const handleDeleteMessage = () => {
         deleteMessage({
-            id: id, messageId: selectedId, user: user,
+            id: props.user.chatId, messageId: selectedId, user: user,
             receiver: props.user
         }).then(() => {
         })
@@ -145,7 +144,7 @@ const ChatItem = (props: { user: IChatItem | null }) => {
         if (contact) {
             return contact.displayName
         } else {
-            return props.user?.uid
+            return props.user?.phoneNumber
         }
     }
 
@@ -478,14 +477,14 @@ const ChatItem = (props: { user: IChatItem | null }) => {
                 <DialogTitle>
                     <Typography variant={'h6'}>Akun ini belum terverifikasi!</Typography>
                 </DialogTitle>
-                
+
                 <DialogContent>
                     <Stack
                         direction={'column'}
                         spacing={2}>
                         Transaksi hanya bisa dilakukan apa bila akun yang dituju sudah terverifikasi.
                     </Stack>
-                    </DialogContent>
+                </DialogContent>
             </Dialog>
         </Box>
     )

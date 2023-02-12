@@ -1,8 +1,9 @@
-import { Alert, Button, Divider, Paper, Snackbar, Stack, Typography } from "@mui/material"
+import { Alert, Button, Divider, Modal, OutlinedInput, Paper, Snackbar, Stack, Typography } from "@mui/material"
+import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { ITransactions } from "interfaces"
 import moment from "moment"
 import { useState } from "react"
-import { useFirebases } from "utils"
+import { db, useFirebases } from "utils"
 
 const TransactionItem = (props: { transaction: ITransactions }) => {
 
@@ -21,10 +22,55 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
 
 
     const [alertDialog, setAlertDialog] = useState(false)
+    const [openModal, setOpenModal] = useState(false)
+    const [modalDone, setModalDone] = useState(false)
     const { user } = useFirebases()
+    const [reason, setReason] = useState('')
 
     const openInNewTab = (url: string) => {
         window.open(url, '_blank', 'noopener,noreferrer')
+    }
+
+    const handleDone = (transactionId: string) => {
+        const docRef = doc(db, 'transactions', transactionId)
+        updateDoc(docRef, {
+            status: 'done'
+        }).then(() => {
+        })
+    }
+
+    const handleRefund = () => {
+        const docRef = doc(db, 'transactions', id)
+        const refundRef = doc(db, 'refunds', id)
+        const userRef = query(collection(db, 'users'), where('phoneNumber', '==', user.phoneNumber))
+        updateDoc(docRef, {
+            status: 'refund',
+        }).then(() => {
+            setOpenModal(false)
+            getDocs(userRef).then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    return
+                } else {
+                    querySnapshot.forEach((docData) => {
+                        const ref = doc(db, 'users', docData.id, 'verification', user.phoneNumber)
+                        getDoc(ref).then((document) => {
+                            if (document.exists()) {
+                                const data = document.data()
+                                setDoc(refundRef, {
+                                    reason: reason,
+                                    createdAt: new Date().getTime(),
+                                    bankName: data?.bankName,
+                                    bankAccount: data?.bankAccount,
+                                    bankAccountName: data?.bankAccountName,
+                                    orderId: id,
+                                }).then(() => {
+                                })
+                            }
+                        })
+                    })
+                }
+            })
+        })
     }
 
     return (
@@ -133,7 +179,7 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                                 mt: 2
                             }}>
                             {
-                                status !== 'ACTIVE' && status !== 'settlement' ? (
+                                status !== 'ACTIVE' && status !== 'settlement' && status !== 'done' && status !== 'refund' ? (
                                     <Stack
                                         direction={'row'}
                                         justifyContent={'space-between'}>
@@ -164,6 +210,33 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                         </Stack>
                     </Stack>
                 </Paper>
+                <Paper
+                    sx={{
+                        mt: 2,
+                    }}>
+                    {
+                        status !== 'done' && status !== 'pending' && status !== 'refund' && (
+                            <Stack
+                                flexDirection={'row'}
+                                gap={2}
+                                width={'100%'}
+                                justifyContent={'space-between'}>
+                                <Button
+                                    onClick={() => setModalDone(true)}
+                                    variant={'contained'}
+                                    color={'primary'}>
+                                    Selesai
+                                </Button>
+                                <Button
+                                    onClick={() => setOpenModal(true)}
+                                    color={'secondary'}
+                                    variant={'outlined'}>
+                                    Ajukan Refund
+                                </Button>
+                            </Stack>
+                        )
+                    }
+                </Paper>
             </Stack>
             <Snackbar
                 autoHideDuration={2000}
@@ -175,6 +248,87 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                     ID Transaksi berhasil disalin
                 </Alert>
             </Snackbar>
+            <Modal
+                open={openModal}>
+                <Stack
+                    sx={{
+                        width: '50%',
+                        backgroundColor: 'white',
+                        padding: 4,
+                        borderRadius: 1,
+                        // center
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)'
+                    }}>
+                    <Typography variant={'h5'}>
+                        Apakah anda yakin ingin mengajukan refund?
+                    </Typography>
+                    <OutlinedInput
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        sx={{
+                            mt: 2
+                        }}
+                        multiline={true}
+                        rows={4}
+                        placeholder={'Alasan Refund'} />
+                    <Stack
+                        marginTop={2}
+                        gap={2}
+                        width={'100%'}
+                        flexDirection={'row-reverse'}>
+                        <Button
+                            disabled={reason.trim().length <= 2}
+                            onClick={handleRefund}
+                            variant={'contained'}>
+                            Ajukan
+                        </Button>
+                        <Button
+                            onClick={() => setOpenModal(false)}
+                            variant={'outlined'}>
+                            Batal
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Modal>
+            <Modal
+                open={modalDone}>
+                <Stack
+                    sx={{
+                        width: '50%',
+                        backgroundColor: 'white',
+                        padding: 4,
+                        borderRadius: 1,
+                        // center
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)'
+                    }}>
+                    <Typography variant={'h5'}>
+                        Apakah kamu yakin untuk menyelesaikan transaksi ini?
+                    </Typography>
+                    <Stack
+                        marginTop={2}
+                        gap={2}
+                        width={'100%'}
+                        flexDirection={'row-reverse'}>
+                        <Button
+                            onClick={() => handleDone(id)}
+                            variant={'contained'}>
+                            Selesai
+                        </Button>
+                        <Button
+                            onClick={() => setModalDone(false)}
+                            variant={'outlined'}>
+                            Batal
+                        </Button>
+                    </Stack>
+                </Stack>
+
+            </Modal>
         </Stack>
     )
 }

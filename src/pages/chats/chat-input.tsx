@@ -29,7 +29,6 @@ const ChatInput: FC<IChatInputProps> = (props) => {
 
     const { user } = useFirebases()
 
-    const id = user.uid > props.user.uid ? user.uid + props.user.uid : props.user.uid + user.uid
 
     const getMessageType = (msg?: string) => {
         if (msg) {
@@ -68,7 +67,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
             user: user,
             message: msg !== undefined ? getMessageText({ msg: msg, download: "" }) : getMessageText({ download: imgURL, msg: "" }),
             type: getMessageType(msg),
-            id: id,
+            id: props.user.chatId,
             lastMessageType: getLastMessageType(msg),
         })
         setMessage('')
@@ -125,7 +124,7 @@ const ChatInput: FC<IChatInputProps> = (props) => {
         setIsUploading(true)
         const storage = getStorage()
         const imageType = image?.type.split('/')[1]
-        const imageRef = ref(storage, `${user?.uid}/${id}/${uuidv4()}.${imageType}`)
+        const imageRef = ref(storage, `${user?.uid}/${props.user.chatId}/${uuidv4()}.${imageType}`)
         const task = uploadBytesResumable(imageRef, image)
         task.on('state_changed', (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100

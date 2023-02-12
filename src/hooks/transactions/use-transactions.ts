@@ -16,7 +16,7 @@ const useTransactions = (props: { userId?: string }) => {
                 snapshots.docs.forEach((doc) => {
 
                     if (doc.data().id.includes(props?.userId)) {
-                        value.push(doc.data() as ITransactions)
+                        value.push({ ...doc.data() as ITransactions, id: doc.id })
                     }
                 })
                 setTransactions(value.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
@@ -28,7 +28,7 @@ const useTransactions = (props: { userId?: string }) => {
             return () => { }
         }
     }, [props?.userId])
-    
+
     return {
         transactions
     }

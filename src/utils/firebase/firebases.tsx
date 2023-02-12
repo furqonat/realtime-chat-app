@@ -7,7 +7,7 @@ import {
     signInWithCustomToken, signInWithPhoneNumber,
     signOut, User
 } from "firebase/auth"
-import { collection, doc, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
+import { collection, doc, getDoc, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { IUser } from "interfaces"
 import {
     createContext, ReactNode, useContext, useEffect, useState
@@ -48,40 +48,41 @@ const useFirebase = () => {
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null)
     const [verificationCode, setVerificationCode] = useState(0)
     const [phone, setPhone] = useState('')
+    const [loadingUser, setLoadingUser] = useState(true)
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
+        const unsubscribe = onAuthStateChanged(auth, (userRef) => {
+            setLoadingUser(true)
+            if (userRef) {
                 const colRef = collection(db, "users")
-                const users = query(colRef, where("phoneNumber", "==", user?.phoneNumber))
+                const users = query(colRef, where("phoneNumber", "==", userRef?.phoneNumber))
                 onSnapshot(users, (snapshot) => {
-                    snapshot.forEach((doc) => {
-                        if (doc.exists()) {
-                            const data = doc.data()
-                            const userDoc = {
-                                uid: data.uid,
-                                displayName: data.displayName,
-                                photoURL: data.photoURL,
-                                phoneNumber: data.phoneNumber,
-                                isIDCardVerified: data.isIDCardVerified,
-                                email: data.email,
+                    if (snapshot.empty) {
+                        console.log('No matching documents.')
+                        setUser(null)
+                        setLoadingUser(false)
+                        return
+                    } else {
+                        snapshot.forEach((doc) => {
+                            if (doc.exists()) {
+                                const data = doc.data()
+                                const userDoc = {
+                                    uid: data.uid,
+                                    displayName: data.displayName,
+                                    photoURL: data.photoURL,
+                                    phoneNumber: data.phoneNumber,
+                                    isIDCardVerified: data.isIDCardVerified,
+                                    email: data.email,
+                                }
+                                setUser(formatUser(userDoc))
+                                setLoadingUser(false)
+                            } else {
+                                setUser(null)
+                                setLoadingUser(false)
                             }
-                            setUser(formatUser(userDoc))
-                        } else {
-                            setUser(null)
-                        }
-                    })
+                        })
+                    }
                 })
-                if (
-                    matchPath(RoutePath.VERIFICATION, router.pathname) ||
-                    matchPath(RoutePath.VIDEO_CALL, router.pathname) ||
-                    matchPath(RoutePath.ABOUT, router.pathname) ||
-                    matchPath(RoutePath.PRIVACY, router.pathname)
-                ) {
-                    return
-                } else {
-                    navigate('/chats')
-                }
             }
         }, (error) => {
             console.log(error)
@@ -90,10 +91,34 @@ const useFirebase = () => {
         return () => unsubscribe()
     }, [router.pathname, navigate])
 
+    useEffect(() => {
+        if (!loadingUser) {
+            if (user && (
+                matchPath(RoutePath.VERIFICATION, router.pathname) ||
+                matchPath(RoutePath.VIDEO_CALL, router.pathname) ||
+                matchPath(RoutePath.ABOUT, router.pathname) ||
+                matchPath(RoutePath.PRIVACY, router.pathname)
+            )) {
+                return
+            }
+            if (!user && (
+                matchPath(RoutePath.VERIFICATION, router.pathname) ||
+                matchPath(RoutePath.VIDEO_CALL, router.pathname) ||
+                matchPath(RoutePath.ABOUT, router.pathname) ||
+                matchPath(RoutePath.PRIVACY, router.pathname) ||
+                matchPath('/', router.pathname)
+            )) {
+                return
+            }
+            if (user && matchPath('/', router.pathname)) {
+                navigate(RoutePath.INDEX)
+            }
+        }
+    }, [user, loadingUser])
+
 
     const assignUser = async (user: User, nextPage?: string) => {
-        const dbRef = getFirestore(app)
-        const docRef = doc(dbRef, 'users', `${user.uid}`)
+        const docRef = doc(db, 'users', `${user.uid}`)
         const data = await getDoc(docRef)
         if (data.exists()) {
             updateDoc(docRef, {
@@ -102,7 +127,7 @@ const useFirebase = () => {
                 nextPage && navigate(nextPage)
             })
         } else {
-            setDoc(doc(dbRef, 'users', user.uid), {
+            setDoc(doc(db, 'users', user.uid), {
                 phoneNumber: user.phoneNumber,
                 uid: user.uid,
                 displayName: user.displayName,
@@ -240,7 +265,7 @@ const firebaseContext = createContext({
     confirmationResult: null as ConfirmationResult | null,
     signInWithPhone: async (_phoneNumber: string, _recaptchaVerifier: ApplicationVerifier) => { },
     logout: async () => { },
-    user: null as IUser | null | IUser ,
+    user: null as IUser | null | IUser,
     signInWithWhatsApp: async (_phoneNumber: string) => { },
     verifyCode: async (_code: string, _provider: "phone" | "whatsapp", _nextPage?: string) => { },
     signIn: async (_token: string) => { }

@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
+import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import "moment/locale/id";
 import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages';
 import { useEffect, useState } from "react";
@@ -10,10 +10,23 @@ import { IUser } from "interfaces";
 
 const initBeforeUnload = (user: IUser) => {
     window.onbeforeunload = (_event: BeforeUnloadEvent) => {
-        const dbRef = doc(db, 'users', user.phoneNumber)
-        updateDoc(dbRef, {
-            status: new Date().toISOString()
-        }).then(r => {})
+        const dbRef = query(collection(db, 'users'), where('phone', '==', user?.phoneNumber))
+        getDocs(dbRef).then((snapshot) => {
+            if (snapshot.empty) {
+                return
+            } else {
+                snapshot.forEach((doc) => {
+                    if (doc.exists()) {
+                        updateDoc(doc.ref, {
+                            status: new Date().toISOString()
+                        }).then(r => { })
+                    }
+                })
+            }
+        })
+        // updateDoc(dbRef, {
+        //     status: new Date().toISOString()
+        // }).then(r => { })
     }
 }
 
@@ -33,10 +46,10 @@ const App = () => {
 
     useEffect(() => {
         if (user?.uid) {
-            const collectionRef = collection(db, 'users')
+            const collectionRef = query(collection(db, 'users'), where('uid', '==', user.uid))
             getDocs(collectionRef).then((snapshot) => {
                 snapshot.forEach((doc) => {
-                    if (doc.exists() && doc.data().uid === user.uid) {
+                    if (doc.exists()) {
                         updateDoc(doc.ref, {
                             status: online ? 'online' : new Date().toISOString()
                         })

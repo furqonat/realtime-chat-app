@@ -48,6 +48,10 @@ const Item = (props: {
                 return 'Sukses'
             case 'expire':
                 return 'Kadaluarsa'
+            case 'done':
+                return 'Selesai'
+            case 'refund':
+                return 'Refund'
             default:
                 return 'Aktif'
         }
@@ -63,6 +67,10 @@ const Item = (props: {
                 return 'green'
             case 'expire':
                 return 'red'
+            case 'refund':
+                return 'red'
+            case 'done':
+                return 'green'
             default:
                 return 'blue'
         }

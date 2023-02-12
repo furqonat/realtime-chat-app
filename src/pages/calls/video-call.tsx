@@ -60,6 +60,8 @@ const VideoCall = () => {
         }
     }, [callType])
 
+    console.log('id', id)
+
 
     useEffect(() => {
         const dbRef = doc(db, 'calls', id)
@@ -292,6 +294,8 @@ const VideoCall = () => {
             }
         }
     }, [])
+
+    console.log(connectionState)
 
 
     const handleClickVideo = () => {
