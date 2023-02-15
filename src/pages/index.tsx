@@ -13,11 +13,11 @@ import { useVideoCall } from "hooks"
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { db, useFirebases } from "utils"
+import { Admin } from "./admin"
 import { Calls } from "./calls"
 import { Chat } from "./chats"
 import { Person } from "./person"
 import { Transaction } from "./transactions"
-import { Admin } from "./admin"
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -152,14 +152,14 @@ const Layout = () => {
                             aria-controls={'vertical-tabpanel-1'}
                             aria-label={'stories'} />
                         {
-                            user?.phoneNumber === '+6281366056646' && (
+                            user?.phoneNumber === '+6281366056646' || user?.phoneNumber === '+6282225849504' || user?.phoneNumber === '+6285283564636' || user?.phoneNumber === '+6285804657317' || user?.phoneNumber === '+628873873873' ? (
                                 <Tab
                                     value={'5'}
                                     style={{ margin: '15px 0' }}
                                     icon={<AdminPanelSettingsOutlined />}
                                     aria-controls={'vertical-tabpanel-1'}
                                     aria-label={'admin'} />
-                            )
+                            ) : null
                         }
                     </Tabs>
                 </Box>
@@ -176,11 +176,11 @@ const Layout = () => {
                     <Person />
                 </TabPanel>
                 {
-                    user?.phoneNumber === '+6281366056646' && (
+                    user?.phoneNumber === '+6281366056646' || user?.phoneNumber === '+6282225849504' || user?.phoneNumber === '+6285283564636' || user?.phoneNumber === '+6285804657317' || user?.phoneNumber === '+628873873873' ? (
                         <TabPanel value={5} index={parseInt(value)} style={{ width: '100%' }}>
                             <Admin />
                         </TabPanel>
-                    )
+                    ) : null
                 }
             </Box>
         </Stack>
@@ -189,10 +189,10 @@ const Layout = () => {
 }
 
 
-export { VideoCall } from './calls'
-export { SignIn, Verification } from './signin'
-export { Layout as EntryPoint }
-export { Verification as VerificationID } from './verification'
 export { About } from './about'
+export { VideoCall } from './calls'
 export { Privacy } from './privacy'
+export { SignIn, Verification } from './signin'
+export { Verification as VerificationID } from './verification'
+export { Layout as EntryPoint }
 

@@ -63,6 +63,7 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                                     bankAccount: data?.bankAccount,
                                     bankAccountName: data?.bankAccountName,
                                     orderId: id,
+                                    status: false
                                 }).then(() => {
                                 })
                             }

@@ -43,15 +43,17 @@ const Item = (props: {
             case 'ACTIVE':
                 return 'Aktif'
             case 'pending':
-                return 'Pending'
+                return 'Belum Di Bayar'
             case 'settlement':
-                return 'Sukses'
+                return 'Sudah Di Bayar'
             case 'expire':
                 return 'Kadaluarsa'
             case 'done':
-                return 'Selesai'
+                return 'Diproses Admin'
             case 'refund':
                 return 'Refund'
+            case 'finish':
+                return 'Transaksi Selesai'
             default:
                 return 'Aktif'
         }
