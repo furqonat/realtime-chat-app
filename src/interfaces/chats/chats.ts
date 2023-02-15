@@ -3,6 +3,7 @@ import { IUser } from "interfaces";
 interface IChatItem extends IUser {
     lastLogin?: any,
     status: "online" | "typing" | string,
+    chatId?: string,
 }
 
 interface IChatMessage {
@@ -31,6 +32,7 @@ interface IChatMessage {
 
 
 interface IChatList {
+    chatId: string;
     id: string,
     owner: string,
     receiver: {

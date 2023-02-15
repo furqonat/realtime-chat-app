@@ -11,7 +11,7 @@ import {
     Stack,
     Typography
 } from '@mui/material'
-import { doc, getDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, where, query, getDocs } from 'firebase/firestore'
 import { useChats } from 'hooks'
 import { IChatItem } from 'interfaces'
 import React, { useState } from 'react'
@@ -25,32 +25,53 @@ const Chat = () => {
 
 
     const navigate = useNavigate()
-    const {logout} = useFirebases()
+    const { logout } = useFirebases()
     const [anchorMore, setAnchorMore] = useState<null | HTMLButtonElement>(null)
     const [openPopup, setOpenPopup] = useState(false)
     const [openModal, setOpenModal] = useState(false)
-    const [query, setQuery] = useState('')
+    const [q, setQuery] = useState('')
     const [error, setError] = useState(false)
     const [users, setUsers] = useState<IChatItem | null>(null)
 
-    const {user} = useFirebases()
+    const { user } = useFirebases()
 
 
-    const {chatList} = useChats({user: user})
+
+    const { chatList } = useChats({ user: user })
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(event.target.value)
     }
     const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
-            const dbRef = doc(db, 'users', query)
-            getDoc(dbRef).then(docSnap => {
-                if (docSnap.exists()) {
-                    setUsers(docSnap.data() as IChatItem)
-                    setOpenModal(false)
-                    setError(false)
-                } else {
+            const dbRef = query(collection(db, 'users'), where('phoneNumber', '==', q))
+            getDocs(dbRef).then(docSnap => {
+                if (docSnap.empty) {
+
                     setError(true)
+                } else {
+                    docSnap.forEach(doc => {
+                        if (doc.exists()) {
+                            const it = chatList.filter((item) => {
+                                if (item.ownerPhoneNumber === doc.data().phoneNumber && item.receiver.phoneNumber === user.phoneNumber) {
+                                    return item
+                                } else if (item.ownerPhoneNumber === user.phoneNumber && item.receiver.phoneNumber === doc.data().phoneNumber) {
+                                    return item
+                                } else {
+                                    return null
+                                }
+                            })
+                            if (it.length > 0) {
+                                setUsers({ ...doc.data() as IChatItem, chatId: it[0].id })
+                                setError(false)
+                                setOpenModal(false)
+                            } else {
+                                setUsers({ ...doc.data() as IChatItem, chatId: `${user?.uid}${doc.data().uid}` })
+                                setError(false)
+                                setOpenModal(false)
+                            }
+                        }
+                    })
                 }
             })
         }
@@ -72,10 +93,28 @@ const Chat = () => {
     }
 
     const onChatClick = (event: string) => {
-        const dbRef = doc(db, 'users', event)
-        getDoc(dbRef).then(docSnap => {
-            if (docSnap.exists()) {
-                setUsers(docSnap.data() as IChatItem)
+        const dbRef = query(collection(db, 'users'), where('phoneNumber', '==', event))
+        getDocs(dbRef).then(docSnap => {
+            if (!docSnap.empty) {
+                docSnap.forEach(doc => {
+                    if (doc.exists()) {
+                        const it = chatList.filter((item) => {
+                            if (item.ownerPhoneNumber === doc.data().phoneNumber && item.receiver.phoneNumber === user.phoneNumber) {
+                                return item
+                            } else if (item.ownerPhoneNumber === user.phoneNumber && item.receiver.phoneNumber === doc.data().phoneNumber) {
+                                return item
+                            } else {
+                                return null
+                            }
+                        })
+                        if (it.length > 0) {
+                            setUsers({ ...doc.data() as IChatItem, chatId: it[0].id })
+                        } else {
+                            setUsers({ ...doc.data() as IChatItem, chatId: `${user?.uid}${doc.data().uid}` })
+                        }
+                    }
+                })
+            } else {
             }
         })
     }
@@ -84,8 +123,8 @@ const Chat = () => {
     return (
         <Grid wrap='nowrap' container={true}>
             <Grid item={true} xs={6}>
-                <Stack sx={{position: 'relative', width: '100%'}} spacing={1}>
-                    <Stack spacing={2} sx={{py: 1.3, px: 3, background: '#f3f5f7'}}>
+                <Stack sx={{ position: 'relative', width: '100%' }} spacing={1}>
+                    <Stack spacing={2} sx={{ py: 1.3, px: 3, background: '#f3f5f7' }}>
                         <Box sx={{
                             width: '100%', display: 'flex',
                             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 2
@@ -94,10 +133,10 @@ const Chat = () => {
                             <Stack direction={'row'}>
 
                                 <IconButton>
-                                    <NotificationsOutlined style={{cursor: 'pointer'}}/>
+                                    <NotificationsOutlined style={{ cursor: 'pointer' }} />
                                 </IconButton>
                                 <IconButton onClick={handlePopup}>
-                                    <MoreVertOutlined style={{cursor: 'pointer'}} aria-describedby={'more'}/>
+                                    <MoreVertOutlined style={{ cursor: 'pointer' }} aria-describedby={'more'} />
                                 </IconButton>
                                 <Popover
                                     id={'more'}
@@ -117,7 +156,7 @@ const Chat = () => {
                                             onClick={() => handleOpenModal()}>
                                             <Typography
                                                 variant={'body2'}
-                                                sx={{cursor: 'pointer'}}>
+                                                sx={{ cursor: 'pointer' }}>
                                                 Chat Baru
                                             </Typography>
                                         </MenuItem>
@@ -125,7 +164,7 @@ const Chat = () => {
                                             <Typography
                                                 variant={'body2'}
                                                 onClick={() => handleSignOut()}
-                                                sx={{cursor: 'pointer'}}>
+                                                sx={{ cursor: 'pointer' }}>
                                                 Keluar
                                             </Typography>
                                         </MenuItem>
@@ -159,32 +198,32 @@ const Chat = () => {
                                     id={'modal-modal-description'}
                                     fullWidth={true}
                                     error={error}
-                                    value={query}
+                                    value={q}
                                     onChange={handleSearch}
                                     onKeyDown={handleEnter}
                                     placeholder={'Cari Nomor Telepon'}
-                                    sx={{borderRadius: 10}}/>
+                                    sx={{ borderRadius: 10 }} />
                             </Stack>
                         </Modal>
                         <OutlinedInput
                             fullWidth={true}
-                            sx={{width: '100%', height: 40, borderRadius: 10, background: '#fff', p: 1.5}}
+                            sx={{ width: '100%', height: 40, borderRadius: 10, background: '#fff', p: 1.5 }}
                             placeholder={'Cari Pesan'}
                             endAdornment={
                                 < InputAdornment position={'end'}>
-                                    <SearchOutlined/>
+                                    <SearchOutlined />
                                 </InputAdornment>
                             }
-                            size={'small'}/>
+                            size={'small'} />
                     </Stack>
                     <ChatList
                         onClick={onChatClick}
-                        chat={chatList}/>
+                        chat={chatList} />
                 </Stack>
             </Grid>
             <Grid item={true} xs={12}>
                 {
-                    users && <ChatItem user={users}/>
+                    users && <ChatItem user={users} />
                 }
             </Grid>
         </Grid>

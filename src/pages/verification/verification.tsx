@@ -1,7 +1,7 @@
 import { ImageOutlined } from "@mui/icons-material"
 import { AppBar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Stack, Toolbar, Typography } from "@mui/material"
 import { getAuth, updateEmail, updateProfile } from "firebase/auth"
-import { doc, setDoc, updateDoc } from "firebase/firestore"
+import { collection, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
 import { useVerification } from "hooks"
 import { useEffect, useState } from "react"
@@ -143,8 +143,8 @@ const Verification = () => {
 
     const handleOnSubmit = () => {
         if (!disable) {
-            const docRef = doc(db, 'users', user?.phoneNumber)
-            const docUserRef = doc(db, 'users', user?.phoneNumber, 'verification', user?.phoneNumber)
+            // const docRef = doc(db, 'users', user?.phoneNumber)
+            // const docUserRef = doc(db, 'users', user?.phoneNumber, 'verification', user?.phoneNumber)
             const storage = getStorage()
             const storageRef = ref(storage, `users/${user?.phoneNumber}/id-card`)
             const uploadTask = uploadBytesResumable(storageRef, file)
@@ -155,24 +155,34 @@ const Verification = () => {
                 console.log(error)
             }, () => {
                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    updateDoc(docRef, {
-                        displayName: displayName,
-                        email: email,
-                    }).then(() => {
-                        setDoc(docUserRef, {
-                            name: name,
-                            nik: nik,
-                            address: address,
-                            image: downloadURL,
-                            dob: birthDate,
-                            date: new Date().toISOString(),
-                            bankName: bankName,
-                            bankAccount: bankAccount,
-                            bankAccountName: bankAccountName,
-                        }).then(() => {
-                            setOpen(false)
-                            navigate('/chats')
-                        })
+                    const refDoc = query(collection(db, 'users'), where('phoneNumber', '==', user?.phoneNumber))
+                    getDocs(refDoc).then((querySnapshot) => {
+                        if (querySnapshot.empty) {
+                            return
+                        } else {
+                            querySnapshot.forEach((docs) => {
+                                updateDoc(docs.ref, {
+                                    displayName: displayName,
+                                    email: email,
+                                }).then(() => {
+                                    const docUserRef = doc(db, 'users', docs.id, 'verification', user?.phoneNumber)
+                                    setDoc(docUserRef, {
+                                        name: name,
+                                        nik: nik,
+                                        address: address,
+                                        image: downloadURL,
+                                        dob: birthDate,
+                                        date: new Date().toISOString(),
+                                        bankName: bankName,
+                                        bankAccount: bankAccount,
+                                        bankAccountName: bankAccountName,
+                                    }).then(() => {
+                                        setOpen(false)
+                                        navigate('/chats')
+                                    })
+                                })
+                            })
+                        }
                     })
                 })
             })

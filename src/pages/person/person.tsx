@@ -1,6 +1,6 @@
 import { EditOutlined } from "@mui/icons-material"
 import { Avatar, Box, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, OutlinedInput, Paper, Stack, Typography } from "@mui/material"
-import { doc, updateDoc } from "firebase/firestore"
+import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
 import { useVerification } from "hooks"
 import { useState } from "react"
@@ -11,7 +11,7 @@ const Person = () => {
 
     const { user } = useFirebases()
     const { verification } = useVerification({
-        uid: user?.uid
+        uid: user?.phoneNumber
     })
 
     const [name, setName] = useState(user?.displayName ?? '')
@@ -34,7 +34,6 @@ const Person = () => {
             setProgress(0)
             setDialog(true)
             const storage = getStorage()
-            const docRef = doc(db, 'users', `${user.uid}`)
             const storageRef = ref(storage, `${user.uid}/avatar/${file.name}`)
             const task = uploadBytesResumable(storageRef, file)
             task.on('state_changed', (snapshot) => {
@@ -46,11 +45,22 @@ const Person = () => {
                 console.log('upload success')
                 getDownloadURL(task.snapshot.ref).then((url) => {
                     setAvatar(url)
-                    updateDoc(docRef, {
-                        photoURL: url
-                    }).then(() => {
-                        setDialog(false)
-                        setProgress(0)
+                    const userRef = query(collection(db, 'users'), where('phoneNumber', '==', user.phoneNumber))
+                    getDocs(userRef).then((snapshot) => {
+                        if (snapshot.empty) {
+                            return
+                        } else {
+                            snapshot.forEach((doc) => {
+                                if (doc.exists()) {
+                                    updateDoc(doc.ref, {
+                                        photoURL: url
+                                    }).then(() => {
+                                        setDialog(false)
+                                        setProgress(0)
+                                    })
+                                }
+                            })
+                        }
                     })
                 })
             })
