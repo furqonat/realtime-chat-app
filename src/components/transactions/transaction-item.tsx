@@ -180,7 +180,7 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                                 mt: 2
                             }}>
                             {
-                                status !== 'ACTIVE' && status !== 'settlement' && status !== 'done' && status !== 'refund' ? (
+                                status !== 'ACTIVE' && status !== 'settlement' && status !== 'done' && status !== 'refund' && status !== 'finish' ? (
                                     <Stack
                                         direction={'row'}
                                         justifyContent={'space-between'}>
@@ -216,7 +216,7 @@ const TransactionItem = (props: { transaction: ITransactions }) => {
                         mt: 2,
                     }}>
                     {
-                        status !== 'done' && status !== 'pending' && status !== 'refund' && (
+                        status !== 'done' && status !== 'pending' && status !== 'refund' && status !== 'finish' && (
                             <Stack
                                 flexDirection={'row'}
                                 gap={2}
