@@ -7,7 +7,18 @@ import {
     signInWithCustomToken, signInWithPhoneNumber,
     signOut, User
 } from "firebase/auth"
-import { collection, doc, getDoc, getFirestore, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    getFirestore,
+    onSnapshot,
+    query,
+    setDoc,
+    updateDoc,
+    where
+} from "firebase/firestore"
 import { IUser } from "interfaces"
 import {
     createContext, ReactNode, useContext, useEffect, useState
@@ -241,8 +252,9 @@ const useFirebase = () => {
 
     const logout = async () => {
         if (user) {
-            const dbRef = doc(db, 'users', user.uid)
-            return updateDoc(dbRef, {
+            const dbRef = query(collection(db, 'users'), where('phoneNumber', '==', user.phoneNumber))
+            const data = await getDocs(dbRef)
+            return updateDoc(data.docs[0].ref, {
                 status: new Date().toISOString()
             }).then(() => {
                 signOut(auth)
