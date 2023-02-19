@@ -7,17 +7,6 @@ export function registerServiceWorker() {
         })
     }
 }
-
-export function registerServiceWorkerNotification() {
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker-notification.js').then(r => {
-                console.log('Service worker notification registered.', r.active.state);
-            })
-        })
-    }
-}
-
 export function unregisterServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(registration => {

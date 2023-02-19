@@ -7,6 +7,7 @@ import { db, useFirebases } from "utils";
 import { RoutePath } from './components';
 import './index.css';
 import { IUser } from "interfaces";
+import moment from "moment";
 
 
 const initBeforeUnload = (user: IUser) => {
@@ -105,12 +106,11 @@ const App = () => {
                         onSnapshot(collection(db, 'chats', change.doc.id, 'messages'), (data) => {
                             data.docChanges().forEach((ch) => {
                                 if (change.type === "added") {
-                                    console.log(ch.doc.data())
                                     const phoneNumber = ch.doc.data().receiver.phoneNumber
                                     // display notification when new message is added and user is not in chat screen
-                                    console.log(phoneNumber, user?.phoneNumber)
-                                    if (user?.phoneNumber === phoneNumber) {
-                                        console.log("new message", ch.doc.data().message.text)
+                                    const messageAt = ch.doc.data().message.createdAt
+                                    const diff = moment().diff(moment(messageAt), 'minutes')
+                                    if (user?.phoneNumber === phoneNumber && diff < 1) {
                                         const notification = new Notification(ch.doc.data().sender.displayName, {
                                             body: ch.doc.data().message.text,
                                             icon: ch.doc.data().sender.photoURL,
@@ -130,8 +130,8 @@ const App = () => {
                             data.docChanges().forEach((ch) => {
                                 if (change.type === "added") {
                                     const phoneNumber = ch.doc.data().receiver.phoneNumber
-                                    // display notification when new message is added and user is not in chat screen
-                                    if (user?.phoneNumber === phoneNumber) {
+                                    const diff = moment().diff(moment(ch.doc.data().message.createdAt), 'minutes')
+                                    if (user?.phoneNumber === phoneNumber && diff < 1) {
                                         console.log("new message", ch.doc.data().message.text)
                                         const notification = new Notification("New message", {
                                             body: ch.doc.data().message.text,
