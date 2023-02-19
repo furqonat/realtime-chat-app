@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
 import App from "./app"
 import { FirebaseProvider } from "./utils"
+import { registerServiceWorker, registerServiceWorkerNotification } from './service-worker'
 
 const app = ReactDOM.createRoot(document.getElementById('app') as HTMLElement)
 
@@ -42,3 +43,6 @@ app.render(
         </FirebaseProvider>
     </BrowserRouter>
 )
+
+registerServiceWorkerNotification()
+registerServiceWorker()

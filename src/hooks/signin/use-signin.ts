@@ -1,17 +1,14 @@
 import { uuidv4 } from "@firebase/util";
-import { collection, onSnapshot } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { db, useFirebases } from "utils";
+import { useState } from "react";
 
 const useSignIn = () => {
 
     const [verificationId] = useState<string>(uuidv4())
-    const [token, setToken] = useState<string>('')
 
-    const { signIn } = useFirebases()
-    
 
-    useEffect(() => {
+
+
+    /*useEffect(() => {
         const unsubscribe = () => {
             const docRef = collection(db, "signin")
             onSnapshot(docRef, (snapshot) => {
@@ -24,6 +21,7 @@ const useSignIn = () => {
                             })
                         }
                     } else if (change.type === "modified") {
+                        console.log("modified")
                         if (change.doc.id === verificationId) {
                             setToken(change.doc.data().token)
                             signIn(change.doc.data().token).then(() => {
@@ -38,13 +36,13 @@ const useSignIn = () => {
         }
         return () => {
             unsubscribe()
+
         }
 
-    }, [verificationId, signIn])
+    }, [verificationId, signIn])*/
 
     return {
         verificationId,
-        token
     }
 }
 

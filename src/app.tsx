@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import "moment/locale/id";
 import { About, EntryPoint, Privacy, SignIn, Verification, VerificationID, VideoCall } from 'pages';
 import { useEffect, useState } from "react";
@@ -8,9 +8,10 @@ import { RoutePath } from './components';
 import './index.css';
 import { IUser } from "interfaces";
 
+
 const initBeforeUnload = (user: IUser) => {
     window.onbeforeunload = (_event: BeforeUnloadEvent) => {
-        const dbRef = query(collection(db, 'users'), where('phone', '==', user?.phoneNumber))
+        const dbRef = query(collection(db, 'users'), where('phoneNumber', '==', user?.phoneNumber))
         getDocs(dbRef).then((snapshot) => {
             if (snapshot.empty) {
                 return
@@ -19,7 +20,8 @@ const initBeforeUnload = (user: IUser) => {
                     if (doc.exists()) {
                         updateDoc(doc.ref, {
                             status: new Date().toISOString()
-                        }).then(r => { })
+                        }).then(r => {
+                        })
                     }
                 })
             }
@@ -30,10 +32,12 @@ const initBeforeUnload = (user: IUser) => {
     }
 }
 
+const bc = new BroadcastChannel('messaging-channel');
+
 const App = () => {
 
 
-    const { user } = useFirebases()
+    const {user} = useFirebases()
     const [online, setOnline] = useState(document.visibilityState === 'visible')
 
     window.onload = () => {
@@ -45,8 +49,8 @@ const App = () => {
     }, [user])
 
     useEffect(() => {
-        if (user?.uid) {
-            const collectionRef = query(collection(db, 'users'), where('uid', '==', user.uid))
+        if (user?.phoneNumber) {
+            const collectionRef = query(collection(db, 'users'), where('phoneNumber', '==', user.phoneNumber))
             getDocs(collectionRef).then((snapshot) => {
                 snapshot.forEach((doc) => {
                     if (doc.exists()) {
@@ -68,8 +72,9 @@ const App = () => {
                 })
             }
         }
-        return () => { }
-    }, [user?.uid, online])
+        return () => {
+        }
+    }, [user?.phoneNumber, online])
 
     useEffect(() => {
         const handler = () => setOnline(document.visibilityState === 'visible')
@@ -77,16 +82,88 @@ const App = () => {
         return () => document.removeEventListener('visibilitychange', handler)
     }, [])
 
+    // send message to service worker
+    useEffect(() => {
+        // request permission notification
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                bc.postMessage('Hello world!');
+            } else {
+                console.log('Permission denied')
+            }
+        })
+    }, [])
 
+    useEffect(() => {
+        if (user?.phoneNumber) {
+            const unsubscribe = onSnapshot(collection(db, 'chats'), (snapshot) => {
+                if (snapshot.empty) {
+                    return
+                }
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        onSnapshot(collection(db, 'chats', change.doc.id, 'messages'), (data) => {
+                            data.docChanges().forEach((ch) => {
+                                if (change.type === "added") {
+                                    console.log(ch.doc.data())
+                                    const phoneNumber = ch.doc.data().receiver.phoneNumber
+                                    // display notification when new message is added and user is not in chat screen
+                                    console.log(phoneNumber, user?.phoneNumber)
+                                    if (user?.phoneNumber === phoneNumber) {
+                                        console.log("new message", ch.doc.data().message.text)
+                                        const notification = new Notification(ch.doc.data().sender.displayName, {
+                                            body: ch.doc.data().message.text,
+                                            icon: ch.doc.data().sender.photoURL,
+                                            tag: ch.doc.data().sender.uid
+                                        })
+                                        notification.onclick = () => {
+                                            window.focus()
+                                        }
+                                    }
+                                    // play sound when new message is added and user is not in chat screen
+                                }
+                            })
+                        })
+                    }
+                    if (change.type === 'modified') {
+                        onSnapshot(collection(db, 'chats', change.doc.id, 'messages'), (data) => {
+                            data.docChanges().forEach((ch) => {
+                                if (change.type === "added") {
+                                    const phoneNumber = ch.doc.data().receiver.phoneNumber
+                                    // display notification when new message is added and user is not in chat screen
+                                    if (user?.phoneNumber === phoneNumber) {
+                                        console.log("new message", ch.doc.data().message.text)
+                                        const notification = new Notification("New message", {
+                                            body: ch.doc.data().message.text,
+                                            icon: ch.doc.data().sender.photoURL,
+                                            tag: ch.doc.data().sender.uid
+                                        })
+                                        notification.onclick = () => {
+                                            window.focus()
+                                        }
+                                    }
+                                    // play sound when new message is added and user is not in chat screen
+                                }
+                            })
+                        })
+                    }
+                })
+            })
+            return () => unsubscribe()
+        } else {
+            return () => {
+            }
+        }
+    }, [user?.phoneNumber])
     return (
         <Routes>
-            <Route index element={<SignIn />} />
-            <Route path={RoutePath.INDEX} element={<EntryPoint />} />
-            <Route path={RoutePath.VERIFY} element={<Verification />} />
-            <Route path={RoutePath.VIDEO_CALL} element={<VideoCall />} />
-            <Route path={RoutePath.VERIFICATION} element={<VerificationID />} />
-            <Route path={RoutePath.ABOUT} element={<About />} />
-            <Route path={RoutePath.PRIVACY} element={<Privacy />} />
+            <Route index element={<SignIn/>}/>
+            <Route path={RoutePath.INDEX} element={<EntryPoint/>}/>
+            <Route path={RoutePath.VERIFY} element={<Verification/>}/>
+            <Route path={RoutePath.VIDEO_CALL} element={<VideoCall/>}/>
+            <Route path={RoutePath.VERIFICATION} element={<VerificationID/>}/>
+            <Route path={RoutePath.ABOUT} element={<About/>}/>
+            <Route path={RoutePath.PRIVACY} element={<Privacy/>}/>
         </Routes>
     )
 }

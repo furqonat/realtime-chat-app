@@ -41,15 +41,11 @@ const useChats = (props: { id?: string, user: IUser | null }) => {
                 onSnapshot(messageRef, snapshot => {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === "added") {
-                            // play sound when new message is added and user is not in chat screen 
+                            // play sound when new message is added and user is not in chat screen
                             if (document.visibilityState !== "visible" && props.user?.uid !== change.doc.data().sender.uid) {
                                 const audio = new Audio(newChatSound)
                                 audio.play()
                             }
-                            // play sound if message is not from current user and read status is false and message is less than 5 second old
-                            // if (change.doc.data().sender.uid !== props.user.uid && !change.doc.data().read && new Date().getTime() - new Date(change.doc.data().time).getTime() < 5000) {
-                            //     new Audio(newChatSound).play()
-                            // }
                         }
                         if (change.type === 'modified') {
                             // if message visitiblity for sender and receiver is false then delete message

@@ -252,12 +252,14 @@ const useFirebase = () => {
 
     const logout = async () => {
         if (user) {
-            const dbRef = query(collection(db, 'users'), where('phoneNumber', '==', user.phoneNumber))
-            const data = await getDocs(dbRef)
-            return updateDoc(data.docs[0].ref, {
-                status: new Date().toISOString()
-            }).then(() => {
-                signOut(auth)
+            signOut(auth).then(async () => {
+                setUser(null)
+                const dbRef = query(collection(db, 'users'), where('phoneNumber', '==', user.phoneNumber))
+                const data = await getDocs(dbRef)
+                return updateDoc(data.docs[0].ref, {
+                    status: new Date().toISOString()
+                }).then(() => {
+                })
             })
         }
     }
